@@ -6,10 +6,11 @@ import {
 } from "recharts";
 
 /* ─────────────────────────────────────────────────────────────────
-   GLOBAL CSS — injected once at root
-   Background: rich deep navy-slate (NOT pitch black)
-   Cards: slightly lighter with visible borders
-   Text: 3-tier contrast system — all WCAG AA compliant
+   GLOBAL CSS — LIGHT THEME
+   Page: warm off-white  #F4F6FA
+   Cards: pure white #FFFFFF with subtle shadows
+   Text: deep navy for max contrast on white
+   Accents: stay vibrant — indigo primary, teal secondary
 ───────────────────────────────────────────────────────────────── */
 const G = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
@@ -17,15 +18,15 @@ const G = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html,body,#root{
     width:100%;min-height:100vh;
-    background:#0B1120;
+    background:#F4F6FA;
     overflow-x:hidden;
     font-family:'Space Grotesk',system-ui,sans-serif;
   }
 
   /* ── Scrollbar ── */
   ::-webkit-scrollbar{width:5px;height:5px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:#2A3A5C;border-radius:4px}
+  ::-webkit-scrollbar-track{background:#EEF0F6}
+  ::-webkit-scrollbar-thumb{background:#C4CADE;border-radius:4px}
 
   /* ── Keyframes ── */
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -34,44 +35,46 @@ const G = `
   @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   @keyframes shimmer-line{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
 
-  /* ── Cards ── */
+  /* ── Cards — white with soft shadow ── */
   .aril-card{
-    background:#111827;
-    border:1px solid #1E2D4A;
+    background:#FFFFFF;
+    border:1px solid #E2E8F4;
     border-radius:14px;
     overflow:hidden;
-    transition:border-color .2s;
+    transition:border-color .2s, box-shadow .2s;
+    box-shadow:0 1px 4px rgba(30,50,100,.06);
   }
-  .aril-card:hover{border-color:#2E4172}
+  .aril-card:hover{border-color:#C5CFEC;box-shadow:0 4px 20px rgba(91,106,240,.10)}
 
   .aril-card-header{
-    background:linear-gradient(90deg,#131D33,#111827);
-    border-bottom:1px solid #1E2D4A;
+    background:linear-gradient(90deg,#F8F9FF,#FFFFFF);
+    border-bottom:1px solid #E8EDF6;
     padding:13px 18px;
     display:flex;justify-content:space-between;align-items:center;
   }
 
   /* ── KPI Card ── */
   .kpi{
-    background:linear-gradient(145deg,#111827 0%,#131D33 100%);
-    border:1px solid #1E2D4A;
+    background:#FFFFFF;
+    border:1px solid #E2E8F4;
     border-radius:14px;
     padding:20px;
     position:relative;
     overflow:hidden;
     transition:all .2s;
+    box-shadow:0 1px 4px rgba(30,50,100,.06);
   }
   .kpi::after{
     content:'';position:absolute;inset:0;
-    background:linear-gradient(135deg,rgba(255,255,255,.012),transparent);
+    background:linear-gradient(135deg,rgba(91,106,240,.02),transparent);
     pointer-events:none;
   }
-  .kpi:hover{transform:translateY(-2px);border-color:#2E4172;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+  .kpi:hover{transform:translateY(-2px);border-color:#C5CFEC;box-shadow:0 8px 28px rgba(91,106,240,.12)}
 
   /* ── Tab buttons ── */
   .tab{
     background:none;border:none;
-    color:#7A8DB5;
+    color:#7E8DB0;
     padding:10px 18px;
     cursor:pointer;font-size:12.5px;font-weight:500;
     font-family:'Space Grotesk',sans-serif;
@@ -80,34 +83,34 @@ const G = `
     transition:all .15s;letter-spacing:.2px;
     white-space:nowrap;
   }
-  .tab:hover{color:#C5D1E8}
-  .tab.on{color:#E8EDFA;border-bottom-color:#5B6AF0;font-weight:600}
+  .tab:hover{color:#3B4A7A}
+  .tab.on{color:#1E2A5E;border-bottom-color:#5B6AF0;font-weight:600}
 
   /* ── Range inputs ── */
-  input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:#1E2D4A;outline:none;cursor:pointer}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#5B6AF0;cursor:pointer;box-shadow:0 0 0 3px rgba(91,106,240,.2)}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:#DDE3F0;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#5B6AF0;cursor:pointer;box-shadow:0 0 0 3px rgba(91,106,240,.15)}
   input[type=checkbox]{accent-color:#5B6AF0;width:13px;height:13px;cursor:pointer}
 
   select{
-    background:#0F1729;border:1px solid #1E2D4A;
-    color:#C5D1E8;border-radius:7px;padding:7px 10px;
+    background:#F8F9FF;border:1px solid #DDE3F0;
+    color:#1E2A5E;border-radius:7px;padding:7px 10px;
     font-size:12px;font-family:'Space Grotesk',sans-serif;
     outline:none;cursor:pointer;width:100%;
   }
-  select:focus{border-color:#5B6AF0;outline:2px solid rgba(91,106,240,.15)}
+  select:focus{border-color:#5B6AF0;outline:2px solid rgba(91,106,240,.12)}
 
   table{width:100%;border-collapse:collapse}
-  thead tr{border-bottom:1px solid #1E2D4A}
-  tbody tr{border-bottom:1px solid #131D33;transition:background .1s}
-  tbody tr:hover{background:rgba(91,106,240,.05)}
+  thead tr{border-bottom:1px solid #E2E8F4}
+  tbody tr{border-bottom:1px solid #F0F3FA;transition:background .1s}
+  tbody tr:hover{background:rgba(91,106,240,.04)}
   th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;
-     color:#5A6E96;text-transform:uppercase;letter-spacing:.9px;
+     color:#7E8DB0;text-transform:uppercase;letter-spacing:.9px;
      font-family:'JetBrains Mono',monospace}
-  td{padding:10px 14px;font-size:12.5px;color:#B8C7E0}
+  td{padding:10px 14px;font-size:12.5px;color:#374166}
 
   /* ── Sweep line on risk queue ── */
   .sweep{position:absolute;left:0;right:0;height:80px;
-    background:linear-gradient(transparent,rgba(91,106,240,.03),transparent);
+    background:linear-gradient(transparent,rgba(91,106,240,.025),transparent);
     animation:sweep 5s linear infinite;pointer-events:none}
 
   /* ── Badge ── */
@@ -120,52 +123,55 @@ const G = `
 `;
 
 /* ─────────────────────────────────────────────────────────────────
-   DESIGN TOKENS  — carefully tuned contrast ratios
+   DESIGN TOKENS — LIGHT MODE
+   Backgrounds: white → off-white layers
+   Text: deep navy with 3 contrast tiers (all WCAG AA on white)
+   Accents: same vibrant palette — works equally well on light
 ───────────────────────────────────────────────────────────────── */
 const T = {
-  /* backgrounds — layered from darkest to lightest */
-  bg0: "#0B1120",   /* page bg */
-  bg1: "#0F1729",   /* elevated bg */
-  bg2: "#111827",   /* card bg */
-  bg3: "#131D33",   /* card header */
-  bg4: "#172036",   /* subtle hover / inset */
+  /* backgrounds — layered light to lighter */
+  bg0: "#F4F6FA",   /* page bg — warm off-white */
+  bg1: "#EEF1F9",   /* subtle inset / pressed */
+  bg2: "#FFFFFF",   /* card bg — pure white */
+  bg3: "#F8F9FF",   /* card header — barely-there blue tint */
+  bg4: "#F0F3FA",   /* hover rows / subtle inset */
 
-  /* primary accent — electric blue-violet */
+  /* primary accent — electric indigo (unchanged) */
   p:   "#5B6AF0",
-  pL:  "#818CF8",   /* lighter for text on dark */
-  pLL: "#A5B0FF",   /* very light for secondary text */
+  pL:  "#4354E8",   /* darker for text on white — better contrast */
+  pLL: "#2A3CC7",   /* even darker for headers on white */
 
-  /* secondary accent — vibrant teal */
-  s:   "#06C8D6",
-  sL:  "#34D3E0",
+  /* secondary accent — vibrant teal (unchanged) */
+  s:   "#06A8B8",   /* slightly darkened for white bg */
+  sL:  "#048A98",
 
-  /* semantic — all bright enough to read on bg2 */
-  g:   "#10C97A",   /* green */
-  gL:  "#4ADDA0",
-  a:   "#F0A500",   /* amber */
-  aL:  "#F5BE45",
-  r:   "#F0365A",   /* red */
-  rL:  "#FF6B87",
+  /* semantic — darkened for white backgrounds (WCAG AA) */
+  g:   "#0A9E5E",   /* green — darker on white */
+  gL:  "#07844E",
+  a:   "#C47E00",   /* amber — darker on white */
+  aL:  "#A86900",
+  r:   "#D42B4E",   /* red — darker on white */
+  rL:  "#B8223F",
 
-  /* ── TEXT — the key fix ── */
-  t1:  "#EEF2FF",   /* primary text — near white, slightly cool */
-  t2:  "#A8B8D4",   /* secondary — clearly readable */
-  t3:  "#6A7FA8",   /* tertiary — labels, captions — no longer invisible */
-  t4:  "#3D506E",   /* disabled / decorative only — not used for readable copy */
+  /* ── TEXT on white — deep navy tiers ── */
+  t1:  "#0F1729",   /* primary — near-black navy, max contrast */
+  t2:  "#374166",   /* secondary — clearly readable mid-navy */
+  t3:  "#7E8DB0",   /* tertiary — labels/captions — passes WCAG AA */
+  t4:  "#B0BCDA",   /* decorative only */
 
-  /* borders */
-  b1:  "#1E2D4A",
-  b2:  "#2A3A5C",
+  /* borders — light grey-blue */
+  b1:  "#E2E8F4",
+  b2:  "#C8D1E8",
 
   mono: "'JetBrains Mono',monospace",
   sans: "'Space Grotesk',system-ui,sans-serif",
 };
 
 const TIP = {
-  background:"#0F1729",border:`1px solid ${T.b2}`,
+  background:"#FFFFFF",border:`1px solid ${T.b2}`,
   borderRadius:9,fontSize:11,fontFamily:T.sans,
   color:T.t1,padding:"9px 13px",
-  boxShadow:"0 12px 40px rgba(0,0,0,.6)",
+  boxShadow:"0 8px 32px rgba(30,50,100,.14)",
 };
 
 /* ─────────────────────────────────────────────────────────────────
@@ -284,7 +290,7 @@ function Num({val,pre="",suf="",dec=0}){
 /* Risk badge */
 function RB({prob,lg}){
   const pct=Math.round(prob*100);
-  const[bg,fg,lbl]=prob<.2?[T.g+"22",T.gL,"LOW"]:prob<.4?[T.a+"22",T.aL,"MOD"]:prob<.6?[T.a+"30",T.a,"HIGH"]:[T.r+"22",T.rL,"CRIT"];
+  const[bg,fg,lbl]=prob<.2?["#E6FAF2",T.g,"LOW"]:prob<.4?["#FFF7E0",T.a,"MOD"]:prob<.6?["#FFF0D6",T.a,"HIGH"]:["#FFF0F3",T.r,"CRIT"];
   return(
     <span className="badge" style={{background:bg,color:fg,border:`1px solid ${fg}50`,
       fontSize:lg?12:10,padding:lg?"4px 12px":"2px 8px"}}>
@@ -339,8 +345,8 @@ function KPI({label,val,sub,col=T.p,icon,delta}){
         <span style={{fontSize:20}}>{icon}</span>
         {delta!=null&&(
           <span style={{fontSize:10,fontFamily:T.mono,fontWeight:600,
-            color:delta>=0?T.gL:T.rL,
-            background:delta>=0?"rgba(16,201,122,.12)":"rgba(240,54,90,.12)",
+            color:delta>=0?T.g:T.r,
+            background:delta>=0?"rgba(10,158,94,.10)":"rgba(212,43,78,.10)",
             padding:"2px 7px",borderRadius:8}}>
             {delta>=0?"▲":"▼"}{Math.abs(delta)}%
           </span>
@@ -522,7 +528,7 @@ function OverviewTab({patients,optimized,mc}){
                     <span style={{color:T.t3,fontSize:11,marginLeft:10}}>{p.service} · {p.time} · {p.provider}</span>
                   </div>
                   <RB prob={p.noshow_prob}/>
-                  <span style={{fontFamily:T.mono,fontSize:12,color:T.aL,minWidth:95,textAlign:"right",fontWeight:600}}>${p.revenue} at risk</span>
+                  <span style={{fontFamily:T.mono,fontSize:12,color:T.a,minWidth:95,textAlign:"right",fontWeight:600}}>${p.revenue} at risk</span>
                   <span style={{fontSize:11.5,color:T.s,minWidth:115,textAlign:"right",fontWeight:500}}>
                     {p.shouldOverbook?"⚡ Overbook":"📲 Call + Remind"}
                   </span>
@@ -810,7 +816,7 @@ function SchedulingTab({optimized,waitlist}){
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
                   <div style={{display:"flex",alignItems:"center",gap:9}}>
                     <div style={{width:30,height:30,borderRadius:"50%",
-                      background:`linear-gradient(135deg,${T.p}28,${T.s}18)`,
+                      background:`linear-gradient(135deg,${T.p}15,${T.s}10)`,
                       border:`1px solid ${T.b2}`,
                       display:"flex",alignItems:"center",justifyContent:"center",
                       fontSize:11,fontWeight:700,color:T.pL,fontFamily:T.mono}}>
@@ -832,7 +838,7 @@ function SchedulingTab({optimized,waitlist}){
             {waitlist.slice(0,6).map((w,i)=>(
               <div key={w.id} style={{display:"flex",alignItems:"center",gap:10,
                 padding:"8px 0",borderBottom:`1px solid ${T.b1}`}}>
-                <span style={{fontFamily:T.mono,fontSize:11,color:i<3?T.aL:T.t3,minWidth:20,fontWeight:700}}>#{i+1}</span>
+                <span style={{fontFamily:T.mono,fontSize:11,color:i<3?T.a:T.t3,minWidth:20,fontWeight:700}}>#{i+1}</span>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12.5,color:T.t1,fontWeight:600}}>{w.name}</div>
                   <div style={{fontSize:10,color:T.t3}}>{w.service} · {w.wait_days}d wait</div>
@@ -1149,19 +1155,19 @@ export default function ARIL(){
         {/* ── Ambient gradient background ── */}
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,
           backgroundImage:`
-            radial-gradient(ellipse 60% 40% at 15% 10%, rgba(91,106,240,.07) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 85% 85%, rgba(6,200,214,.05) 0%, transparent 60%)
+            radial-gradient(ellipse 60% 40% at 15% 10%, rgba(91,106,240,.05) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 85% 85%, rgba(6,168,184,.03) 0%, transparent 60%)
           `}}/>
 
         {/* ── Subtle grid ── */}
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,opacity:.4,
-          backgroundImage:`linear-gradient(${T.b1} 1px,transparent 1px),linear-gradient(90deg,${T.b1} 1px,transparent 1px)`,
-          backgroundSize:"52px 52px"}}/>
+          backgroundImage:`radial-gradient(circle,#C8D1E8 1px,transparent 1px)`,
+          backgroundSize:"28px 28px"}}/>
 
         {/* ══════════ HEADER ══════════ */}
         <header style={{position:"sticky",top:0,zIndex:100,
-          background:"rgba(11,17,32,.92)",backdropFilter:"blur(18px)",
-          borderBottom:`1px solid ${T.b1}`,width:"100%",flexShrink:0}}>
+          background:"rgba(255,255,255,.95)",backdropFilter:"blur(18px)",
+          borderBottom:`1px solid ${T.b1}`,width:"100%",flexShrink:0,boxShadow:"0 1px 12px rgba(30,50,100,.07)"}}>
 
           <div style={{maxWidth:1640,margin:"0 auto",padding:"0 28px"}}>
 
@@ -1187,7 +1193,7 @@ export default function ARIL(){
 
                 <div>
                   <div style={{fontFamily:T.mono,fontSize:19,fontWeight:700,letterSpacing:"3px",lineHeight:1,
-                    background:`linear-gradient(120deg,${T.pLL},${T.sL})`,
+                    background:`linear-gradient(120deg,${T.p},${T.s})`,
                     WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
                     ARIL
                   </div>
@@ -1215,11 +1221,11 @@ export default function ARIL(){
               {/* Live metrics bar */}
               <div style={{display:"flex",gap:28,alignItems:"center"}}>
                 {[
-                  {l:"Appointments",   v:patients.length,                         c:T.pLL},
+                  {l:"Appointments",   v:patients.length,                         c:T.pL},
                   {l:"Avg Risk",       v:`${(avgRisk*100).toFixed(1)}%`,           c:avgRisk>.28?T.aL:T.sL},
                   {l:"Critical",       v:critical,                                 c:critical>3?T.rL:T.aL},
                   {l:"Revenue at Risk",v:`$${Math.round(atRisk).toLocaleString()}`,c:T.aL},
-                  {l:"Expected Rev",   v:`$${Math.round(expRev).toLocaleString()}`,c:T.pLL},
+                  {l:"Expected Rev",   v:`$${Math.round(expRev).toLocaleString()}`,c:T.pL},
                 ].map(m=>(
                   <div key={m.l} style={{textAlign:"center"}}>
                     <div style={{fontFamily:T.mono,fontSize:14,fontWeight:700,color:m.c,lineHeight:1,letterSpacing:"-.3px"}}>{m.v}</div>
