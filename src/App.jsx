@@ -5,178 +5,165 @@ import {
   PieChart, Pie, Cell, Legend, ReferenceLine,
 } from "recharts";
 
-/* ─────────────────────────────────────────────────────────────────
-   GLOBAL CSS — LIGHT THEME
-   Page: warm off-white  #F4F6FA
-   Cards: pure white #FFFFFF with subtle shadows
-   Text: deep navy for max contrast on white
-   Accents: stay vibrant — indigo primary, teal secondary
-───────────────────────────────────────────────────────────────── */
-const G = `
+/* ══════════════════════════════════════════════════════════
+   LIGHT THEME — Space Grotesk + JetBrains Mono
+   Page bg : #F0F4FF  soft periwinkle-white
+   Cards   : #FFFFFF  pure white with shadow
+   Text    : deep navy — 3-tier WCAG AA system
+   Accents : indigo #4F5BD5 · teal #0891B2 · stay vibrant
+══════════════════════════════════════════════════════════ */
+const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html,body,#root{
-    width:100%;min-height:100vh;
-    background:#F4F6FA;
-    overflow-x:hidden;
-    font-family:'Space Grotesk',system-ui,sans-serif;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body, #root {
+    width: 100%; min-height: 100vh;
+    background: #F0F4FF;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar{width:5px;height:5px}
-  ::-webkit-scrollbar-track{background:#EEF0F6}
-  ::-webkit-scrollbar-thumb{background:#C4CADE;border-radius:4px}
+  #root { max-width: none !important; padding: 0 !important; }
 
-  /* ── Keyframes ── */
-  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-  @keyframes sweep{0%{transform:translateY(-100%)}100%{transform:translateY(600%)}}
-  @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-  @keyframes shimmer-line{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #E8EDF8; }
+  ::-webkit-scrollbar-thumb { background: #B8C4DC; border-radius: 4px; }
 
-  /* ── Cards — white with soft shadow ── */
-  .aril-card{
-    background:#FFFFFF;
-    border:1px solid #E2E8F4;
-    border-radius:14px;
-    overflow:hidden;
-    transition:border-color .2s, box-shadow .2s;
-    box-shadow:0 1px 4px rgba(30,50,100,.06);
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse  { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.8); } }
+  @keyframes sweep  { 0% { transform:translateY(-100%); } 100% { transform:translateY(800%); } }
+
+  .card {
+    background: #FFFFFF;
+    border: 1px solid #DDE5F5;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(30,50,120,.06), 0 4px 12px rgba(30,50,120,.04);
+    transition: border-color .2s, box-shadow .2s;
   }
-  .aril-card:hover{border-color:#C5CFEC;box-shadow:0 4px 20px rgba(91,106,240,.10)}
+  .card:hover { border-color: #B0BEE8; box-shadow: 0 4px 24px rgba(79,91,213,.10); }
 
-  .aril-card-header{
-    background:linear-gradient(90deg,#F8F9FF,#FFFFFF);
-    border-bottom:1px solid #E8EDF6;
-    padding:13px 18px;
-    display:flex;justify-content:space-between;align-items:center;
+  .card-hdr {
+    background: linear-gradient(90deg, #F5F7FF, #FFFFFF);
+    border-bottom: 1px solid #E4ECFA;
+    padding: 13px 18px;
+    display: flex; justify-content: space-between; align-items: center;
   }
 
-  /* ── KPI Card ── */
-  .kpi{
-    background:#FFFFFF;
-    border:1px solid #E2E8F4;
-    border-radius:14px;
-    padding:20px;
-    position:relative;
-    overflow:hidden;
-    transition:all .2s;
-    box-shadow:0 1px 4px rgba(30,50,100,.06);
+  .kpi-tile {
+    background: #FFFFFF;
+    border: 1px solid #DDE5F5;
+    border-radius: 14px;
+    padding: 20px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(30,50,120,.06);
+    transition: all .2s;
   }
-  .kpi::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(135deg,rgba(91,106,240,.02),transparent);
-    pointer-events:none;
+  .kpi-tile:hover { transform: translateY(-2px); border-color: #B0BEE8; box-shadow: 0 8px 28px rgba(79,91,213,.12); }
+
+  .tab-btn {
+    background: none; border: none;
+    color: #7B8AB5; font-family: 'Space Grotesk', sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    padding: 10px 18px; cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+    border-bottom: 2px solid transparent;
+    transition: all .15s; white-space: nowrap; letter-spacing: .15px;
   }
-  .kpi:hover{transform:translateY(-2px);border-color:#C5CFEC;box-shadow:0 8px 28px rgba(91,106,240,.12)}
+  .tab-btn:hover { color: #2D3A6E; }
+  .tab-btn.active { color: #1A2460; border-bottom-color: #4F5BD5; font-weight: 600; }
 
-  /* ── Tab buttons ── */
-  .tab{
-    background:none;border:none;
-    color:#7E8DB0;
-    padding:10px 18px;
-    cursor:pointer;font-size:12.5px;font-weight:500;
-    font-family:'Space Grotesk',sans-serif;
-    display:flex;align-items:center;gap:7px;
-    border-bottom:2px solid transparent;
-    transition:all .15s;letter-spacing:.2px;
-    white-space:nowrap;
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    border-radius: 2px; background: #DDE5F5; outline: none; cursor: pointer;
   }
-  .tab:hover{color:#3B4A7A}
-  .tab.on{color:#1E2A5E;border-bottom-color:#5B6AF0;font-weight:600}
-
-  /* ── Range inputs ── */
-  input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:#DDE3F0;outline:none;cursor:pointer}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#5B6AF0;cursor:pointer;box-shadow:0 0 0 3px rgba(91,106,240,.15)}
-  input[type=checkbox]{accent-color:#5B6AF0;width:13px;height:13px;cursor:pointer}
-
-  select{
-    background:#F8F9FF;border:1px solid #DDE3F0;
-    color:#1E2A5E;border-radius:7px;padding:7px 10px;
-    font-size:12px;font-family:'Space Grotesk',sans-serif;
-    outline:none;cursor:pointer;width:100%;
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 15px; height: 15px;
+    border-radius: 50%; background: #4F5BD5; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(79,91,213,.18);
   }
-  select:focus{border-color:#5B6AF0;outline:2px solid rgba(91,106,240,.12)}
+  input[type=checkbox] { accent-color: #4F5BD5; width: 13px; height: 13px; cursor: pointer; }
 
-  table{width:100%;border-collapse:collapse}
-  thead tr{border-bottom:1px solid #E2E8F4}
-  tbody tr{border-bottom:1px solid #F0F3FA;transition:background .1s}
-  tbody tr:hover{background:rgba(91,106,240,.04)}
-  th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;
-     color:#7E8DB0;text-transform:uppercase;letter-spacing:.9px;
-     font-family:'JetBrains Mono',monospace}
-  td{padding:10px 14px;font-size:12.5px;color:#374166}
+  select {
+    background: #F5F7FF; border: 1px solid #D0D9F0;
+    color: #1A2460; border-radius: 7px; padding: 7px 10px;
+    font-size: 12px; font-family: 'Space Grotesk', sans-serif;
+    outline: none; cursor: pointer; width: 100%;
+  }
+  select:focus { border-color: #4F5BD5; box-shadow: 0 0 0 2px rgba(79,91,213,.12); }
 
-  /* ── Sweep line on risk queue ── */
-  .sweep{position:absolute;left:0;right:0;height:80px;
-    background:linear-gradient(transparent,rgba(91,106,240,.025),transparent);
-    animation:sweep 5s linear infinite;pointer-events:none}
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 2px solid #E4ECFA; }
+  tbody tr { border-bottom: 1px solid #F0F4FF; transition: background .1s; }
+  tbody tr:hover { background: rgba(79,91,213,.035); }
+  th {
+    padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 600;
+    color: #7B8AB5; text-transform: uppercase; letter-spacing: .9px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  td { padding: 10px 14px; font-size: 12.5px; color: #2D3A6E; }
 
-  /* ── Badge ── */
-  .badge{
-    display:inline-flex;align-items:center;gap:5px;
-    border-radius:5px;padding:3px 9px;
-    font-size:10.5px;font-weight:700;letter-spacing:.7px;
-    font-family:'JetBrains Mono',monospace;
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 5px; padding: 3px 9px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .sweep-line {
+    position: absolute; left: 0; right: 0; height: 70px;
+    background: linear-gradient(transparent, rgba(79,91,213,.03), transparent);
+    animation: sweep 5s linear infinite; pointer-events: none;
   }
 `;
 
-/* ─────────────────────────────────────────────────────────────────
-   DESIGN TOKENS — LIGHT MODE
-   Backgrounds: white → off-white layers
-   Text: deep navy with 3 contrast tiers (all WCAG AA on white)
-   Accents: same vibrant palette — works equally well on light
-───────────────────────────────────────────────────────────────── */
-const T = {
-  /* backgrounds — layered light to lighter */
-  bg0: "#F4F6FA",   /* page bg — warm off-white */
-  bg1: "#EEF1F9",   /* subtle inset / pressed */
-  bg2: "#FFFFFF",   /* card bg — pure white */
-  bg3: "#F8F9FF",   /* card header — barely-there blue tint */
-  bg4: "#F0F3FA",   /* hover rows / subtle inset */
+/* ── Design tokens ── */
+const C = {
+  /* page & surfaces */
+  page:    "#F0F4FF",
+  surface: "#F5F7FF",
+  card:    "#FFFFFF",
+  inset:   "#EDF1FB",
 
-  /* primary accent — electric indigo (unchanged) */
-  p:   "#5B6AF0",
-  pL:  "#4354E8",   /* darker for text on white — better contrast */
-  pLL: "#2A3CC7",   /* even darker for headers on white */
+  /* primary — indigo */
+  ind:  "#4F5BD5",
+  indD: "#3A46B8",  /* darker — for text labels on white */
+  indL: "#7B87E8",  /* lighter — decorative only */
 
-  /* secondary accent — vibrant teal (unchanged) */
-  s:   "#06A8B8",   /* slightly darkened for white bg */
-  sL:  "#048A98",
+  /* secondary — teal */
+  tea:  "#0891B2",
+  teaD: "#0670A0",
 
-  /* semantic — darkened for white backgrounds (WCAG AA) */
-  g:   "#0A9E5E",   /* green — darker on white */
-  gL:  "#07844E",
-  a:   "#C47E00",   /* amber — darker on white */
-  aL:  "#A86900",
-  r:   "#D42B4E",   /* red — darker on white */
-  rL:  "#B8223F",
+  /* semantic — all darkened for white bg contrast */
+  grn:  "#059669",   grnL: "#047857",
+  amb:  "#B45309",   ambL: "#92400E",
+  red:  "#DC2626",   redL: "#B91C1C",
 
-  /* ── TEXT on white — deep navy tiers ── */
-  t1:  "#0F1729",   /* primary — near-black navy, max contrast */
-  t2:  "#374166",   /* secondary — clearly readable mid-navy */
-  t3:  "#7E8DB0",   /* tertiary — labels/captions — passes WCAG AA */
-  t4:  "#B0BCDA",   /* decorative only */
+  /* text — deep navy tiers */
+  tx1: "#111827",   /* near-black navy — headings, values */
+  tx2: "#2D3A6E",   /* mid-navy — body text */
+  tx3: "#7B8AB5",   /* muted blue — labels, captions */
+  tx4: "#B8C4DC",   /* very dim — decorative */
 
-  /* borders — light grey-blue */
-  b1:  "#E2E8F4",
-  b2:  "#C8D1E8",
+  /* borders */
+  br1: "#DDE5F5",
+  br2: "#C0CCEA",
 
-  mono: "'JetBrains Mono',monospace",
-  sans: "'Space Grotesk',system-ui,sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  sans: "'Space Grotesk', system-ui, sans-serif",
 };
 
-const TIP = {
-  background:"#FFFFFF",border:`1px solid ${T.b2}`,
-  borderRadius:9,fontSize:11,fontFamily:T.sans,
-  color:T.t1,padding:"9px 13px",
-  boxShadow:"0 8px 32px rgba(30,50,100,.14)",
+const TIP_STYLE = {
+  background: "#FFFFFF", border: `1px solid ${C.br2}`,
+  borderRadius: 9, fontSize: 11, fontFamily: C.sans,
+  color: C.tx1, padding: "9px 13px",
+  boxShadow: "0 8px 28px rgba(30,50,120,.13)",
 };
 
-/* ─────────────────────────────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════
    ML ENGINE
-───────────────────────────────────────────────────────────────── */
+══════════════════════════════════════════════════════════ */
 const sig = x => 1 / (1 + Math.exp(-x));
 const TREES = {
   t1: f => f.prev>0.4&&f.lead>21?0.38:f.prev>0.25&&f.lead>14?0.22:f.prev<0.1&&f.sms?-0.28:f.lead>30?0.15:0.02,
@@ -184,357 +171,306 @@ const TREES = {
   t3: f => f.dow===5&&f.slot==="afternoon"?0.17:f.dow===1&&f.slot==="morning"?-0.08:f.slot==="evening"?0.12:f.dow===3?-0.06:0,
   t4: f => f.sms&&f.rem?-0.32:!f.sms&&!f.rem&&f.prev>0.3?0.29:f.sms?-0.18:f.rem?-0.10:0.05,
 };
-function predict(p){
-  const f={prev:p.prev_noshow_rate,lead:p.lead_time_days,age:p.age,dow:p.day_of_week,slot:p.time_slot,rem:p.reminder_sent,dist:p.distance_km,ins:p.insurance_type,sms:p.sms_confirmed,isNew:p.is_new};
-  const lin=f.prev*2.8+Math.min(f.lead,45)*0.028+(f.age<28?0.42:f.age>65?-0.28:0)+(f.isNew?0.38:0)+(f.ins==="private"?-0.32:0)+(f.dist>20?0.22:f.dist>10?0.08:0);
-  const boost=TREES.t1(f)+TREES.t2(f)+TREES.t3(f)+TREES.t4(f);
-  return Math.max(0.02,Math.min(0.97,sig(1.08*Math.log(Math.max(0.001,sig(-0.95+lin+boost))/(1-Math.min(0.999,sig(-0.95+lin+boost))))-0.15)));
+function predict(p) {
+  const f = { prev:p.prev_noshow_rate, lead:p.lead_time_days, age:p.age, dow:p.day_of_week, slot:p.time_slot, rem:p.reminder_sent, dist:p.distance_km, ins:p.insurance_type, sms:p.sms_confirmed, isNew:p.is_new };
+  const lin = f.prev*2.8 + Math.min(f.lead,45)*0.028 + (f.age<28?0.42:f.age>65?-0.28:0) + (f.isNew?0.38:0) + (f.ins==="private"?-0.32:0) + (f.dist>20?0.22:f.dist>10?0.08:0);
+  const boost = TREES.t1(f)+TREES.t2(f)+TREES.t3(f)+TREES.t4(f);
+  const raw = sig(-0.95+lin+boost);
+  return Math.max(0.02, Math.min(0.97, sig(1.08*Math.log(Math.max(0.001,raw)/Math.max(0.001,1-raw))-0.15)));
 }
-function explain(p){
+function explain(p) {
   return [
-    {name:"Prior No-Show Rate", contrib:(p.prev_noshow_rate-0.18)*1.4, display:`${(p.prev_noshow_rate*100).toFixed(0)}%`},
-    {name:"SMS Confirmed",      contrib:p.sms_confirmed?-0.09:p.reminder_sent?-0.04:0.06, display:p.sms_confirmed?"Yes":"No"},
-    {name:"Lead Time",          contrib:(Math.min(p.lead_time_days,45)-14)*0.008, display:`${p.lead_time_days}d`},
-    {name:"New Patient",        contrib:p.is_new?0.07:0, display:p.is_new?"Yes":"No"},
-    {name:"Insurance",          contrib:p.insurance_type==="private"?-0.05:0.04, display:p.insurance_type},
-    {name:"Age Profile",        contrib:p.age<28?0.07:p.age>65?-0.05:0, display:`${p.age}yo`},
-    {name:"Day / Time",         contrib:TREES.t3({dow:p.day_of_week,slot:p.time_slot})*0.6, display:`${["","Mon","Tue","Wed","Thu","Fri"][p.day_of_week]} ${p.time_slot}`},
-    {name:"Distance",           contrib:p.distance_km>20?0.04:-0.01, display:`${p.distance_km}km`},
-  ].sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+    { name:"Prior No-Show Rate", contrib:(p.prev_noshow_rate-0.18)*1.4, display:`${(p.prev_noshow_rate*100).toFixed(0)}%` },
+    { name:"SMS Confirmed",      contrib:p.sms_confirmed?-0.09:p.reminder_sent?-0.04:0.06, display:p.sms_confirmed?"Yes":"No" },
+    { name:"Lead Time",          contrib:(Math.min(p.lead_time_days,45)-14)*0.008, display:`${p.lead_time_days}d` },
+    { name:"New Patient",        contrib:p.is_new?0.07:0, display:p.is_new?"Yes":"No" },
+    { name:"Insurance Type",     contrib:p.insurance_type==="private"?-0.05:0.04, display:p.insurance_type },
+    { name:"Age Profile",        contrib:p.age<28?0.07:p.age>65?-0.05:0, display:`${p.age}yo` },
+    { name:"Day / Time Slot",    contrib:TREES.t3({dow:p.day_of_week,slot:p.time_slot})*0.6, display:`${["","Mon","Tue","Wed","Thu","Fri"][p.day_of_week]} ${p.time_slot}` },
+    { name:"Travel Distance",    contrib:p.distance_km>20?0.04:-0.01, display:`${p.distance_km}km` },
+  ].sort((a,b) => Math.abs(b.contrib)-Math.abs(a.contrib));
 }
-function optSlot(p,pen=1.75){
-  const r=p.revenue,pr=p.noshow_prob;
+function optSlot(p, pen=1.75) {
+  const r=p.revenue, pr=p.noshow_prob;
   const evNo=r*(1-pr);
   const evOb=r*(1-pr)*(1-pr*0.5)+r*pr*0.72-r*pen*pr*(1-pr);
   const ob=evOb>evNo;
-  return{...p,shouldOverbook:ob,expectedRevenue:ob?evOb:evNo,opportunityCost:r*pr*(ob?0.28:1)};
+  return { ...p, shouldOverbook:ob, expectedRevenue:ob?evOb:evNo, opportunityCost:r*pr*(ob?0.28:1) };
 }
-function monteCarlo(params,n=900){
-  const{slots,baseNS,rev,obFrac,remLift,confLift,implCost}=params;
-  const sims=Array.from({length:n},()=>{
-    const ns=baseNS*(0.7+Math.random()*0.6);
-    const red=ns*(1-remLift*(0.8+Math.random()*0.4))*(1-confLift*(0.8+Math.random()*0.4));
-    const ob=slots*red*obFrac*(0.85+Math.random()*0.3);
-    return(slots*(1-red)+ob*0.72)*rev-ob*red*rev*0.15;
+function monteCarlo(params, n=900) {
+  const { slots, baseNS, rev, obFrac, remLift, confLift, implCost } = params;
+  const sims = Array.from({length:n}, () => {
+    const ns  = baseNS*(0.7+Math.random()*0.6);
+    const red = ns*(1-remLift*(0.8+Math.random()*0.4))*(1-confLift*(0.8+Math.random()*0.4));
+    const ob  = slots*red*obFrac*(0.85+Math.random()*0.3);
+    return (slots*(1-red)+ob*0.72)*rev - ob*red*rev*0.15;
   }).sort((a,b)=>a-b);
-  const base=slots*(1-baseNS)*rev;
-  return{base,p10:sims[Math.floor(n*.1)],p50:sims[Math.floor(n*.5)],p90:sims[Math.floor(n*.9)],
-    annualLift:(sims[Math.floor(n*.5)]-base)*260,
-    breakEven:Math.ceil(implCost/Math.max(1,sims[Math.floor(n*.5)]-base)),dist:sims};
+  const base = slots*(1-baseNS)*rev;
+  return { base, p10:sims[Math.floor(n*.1)], p50:sims[Math.floor(n*.5)], p90:sims[Math.floor(n*.9)], annualLift:(sims[Math.floor(n*.5)]-base)*260, breakEven:Math.ceil(implCost/Math.max(1,sims[Math.floor(n*.5)]-base)), dist:sims };
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   DATA GENERATION
-───────────────────────────────────────────────────────────────── */
-const SVCS=[{n:"Cardiology",r:380},{n:"Physio",r:145},{n:"Dental",r:175},{n:"Dermatology",r:220},{n:"Primary Care",r:165},{n:"Orthopedics",r:310},{n:"Oncology",r:450},{n:"Neurology",r:295}];
-const PROVS=["Dr. Patel","Dr. Chen","Dr. Williams","Dr. Rodriguez","Dr. Kim"];
-const FN=["Sarah","Michael","Emma","James","Olivia","Noah","Ava","Liam","Isabella","William","Mia","Benjamin","Charlotte","Henry","Amelia","Alexander","Sophia","Lucas","Grace","Jackson","Diana","Marcus","Elena","Robert","Priya"];
-const LN=["K.","T.","L.","W.","P.","B.","M.","H.","G.","F.","C.","R.","D.","N.","S.","Y.","Q.","V."];
-const ri=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
+/* ══════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════ */
+const SVCS  = [{n:"Cardiology",r:380},{n:"Physiotherapy",r:145},{n:"Dental",r:175},{n:"Dermatology",r:220},{n:"Primary Care",r:165},{n:"Orthopedics",r:310},{n:"Oncology",r:450},{n:"Neurology",r:295}];
+const PROVS = ["Dr. Patel","Dr. Chen","Dr. Williams","Dr. Rodriguez","Dr. Kim"];
+const FN    = ["Sarah","Michael","Emma","James","Olivia","Noah","Ava","Liam","Isabella","William","Mia","Benjamin","Charlotte","Henry","Amelia","Alexander","Sophia","Lucas","Grace","Jackson","Diana","Marcus","Elena","Robert","Priya"];
+const LN    = ["K.","T.","L.","W.","P.","B.","M.","H.","G.","F.","C.","R.","D.","N.","S.","Y.","Q.","V."];
+const ri    = (a,b) => Math.floor(a+Math.random()*(b-a+1));
 
-function makePatients(n=24){
-  const SL=["morning","afternoon","evening"];
-  return Array.from({length:n},(_,i)=>{
-    const svc=SVCS[ri(0,SVCS.length-1)];
-    const age=ri(19,82),lead=ri(1,42);
+function makePatients(n=24) {
+  const SL = ["morning","afternoon","evening"];
+  return Array.from({length:n}, (_,i) => {
+    const svc=SVCS[ri(0,SVCS.length-1)], age=ri(19,82), lead=ri(1,42);
     const prevNS=Math.random()<0.3?0.3+Math.random()*0.5:Math.random()*0.25;
-    const dow=ri(1,5),slot=SL[ri(0,2)];
-    const rem=Math.random()>0.35,dist=ri(1,38);
+    const dow=ri(1,5), slot=SL[ri(0,2)], rem=Math.random()>0.35, dist=ri(1,38);
     const ins=Math.random()>0.45?"private":"public";
-    const sms=rem&&Math.random()>0.45,isNew=Math.random()>0.68;
+    const sms=rem&&Math.random()>0.45, isNew=Math.random()>0.68;
     const prov=PROVS[ri(0,PROVS.length-1)];
     const hour=slot==="morning"?ri(8,11):slot==="afternoon"?ri(12,16):ri(17,19);
-    const p={id:i+1,name:`${FN[i%FN.length]} ${LN[i%LN.length]}`,age,
-      service:svc.n,revenue:svc.r,provider:prov,
-      lead_time_days:lead,prev_noshow_rate:prevNS,
-      day_of_week:dow,day_name:["","Mon","Tue","Wed","Thu","Fri"][dow],
-      time_slot:slot,time:`${hour}:${Math.random()>0.5?"00":"30"}`,
-      reminder_sent:rem,distance_km:dist,insurance_type:ins,
-      sms_confirmed:sms,is_new:isNew};
-    p.noshow_prob=predict(p);
-    p.conf_lo=Math.max(0.01,p.noshow_prob-0.04-Math.random()*0.04);
-    p.conf_hi=Math.min(0.99,p.noshow_prob+0.04+Math.random()*0.04);
+    const p = { id:i+1, name:`${FN[i%FN.length]} ${LN[i%LN.length]}`, age, service:svc.n, revenue:svc.r, provider:prov, lead_time_days:lead, prev_noshow_rate:prevNS, day_of_week:dow, day_name:["","Mon","Tue","Wed","Thu","Fri"][dow], time_slot:slot, time:`${hour}:${Math.random()>.5?"00":"30"}`, reminder_sent:rem, distance_km:dist, insurance_type:ins, sms_confirmed:sms, is_new:isNew };
+    p.noshow_prob = predict(p);
+    p.conf_lo = Math.max(0.01, p.noshow_prob-0.04-Math.random()*0.04);
+    p.conf_hi = Math.min(0.99, p.noshow_prob+0.04+Math.random()*0.04);
     return p;
-  }).sort((a,b)=>parseInt(a.time)-parseInt(b.time));
+  }).sort((a,b) => parseInt(a.time)-parseInt(b.time));
 }
-function makeWaitlist(n=10){
-  return Array.from({length:n},(_,i)=>{
+function makeWaitlist(n=10) {
+  return Array.from({length:n}, (_,i) => {
     const svc=SVCS[ri(0,SVCS.length-1)];
-    const fp={prev_noshow_rate:Math.random()*0.3,lead_time_days:1,age:ri(19,78),day_of_week:ri(1,5),time_slot:"morning",reminder_sent:true,distance_km:ri(2,15),insurance_type:Math.random()>0.4?"private":"public",sms_confirmed:Math.random()>0.3,is_new:Math.random()>0.7};
-    return{id:100+i,name:`${FN[(i+12)%FN.length]} ${LN[(i+7)%LN.length]}`,
-      service:svc.n,revenue:svc.r,noshow_prob:predict(fp),
-      urgency:0.5+Math.random()*0.5,wait_days:ri(3,45)};
-  }).sort((a,b)=>b.revenue*(1-b.noshow_prob)*b.urgency-a.revenue*(1-a.noshow_prob)*a.urgency);
+    const fp = { prev_noshow_rate:Math.random()*0.3, lead_time_days:1, age:ri(19,78), day_of_week:ri(1,5), time_slot:"morning", reminder_sent:true, distance_km:ri(2,15), insurance_type:Math.random()>0.4?"private":"public", sms_confirmed:Math.random()>0.3, is_new:Math.random()>0.7 };
+    return { id:100+i, name:`${FN[(i+12)%FN.length]} ${LN[(i+7)%LN.length]}`, service:svc.n, revenue:svc.r, noshow_prob:predict(fp), urgency:0.5+Math.random()*0.5, wait_days:ri(3,45) };
+  }).sort((a,b) => b.revenue*(1-b.noshow_prob)*b.urgency - a.revenue*(1-a.noshow_prob)*a.urgency);
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   SHARED COMPONENTS
-───────────────────────────────────────────────────────────────── */
-
-/* Animated number counter */
-function Num({val,pre="",suf="",dec=0}){
-  const [d,setD]=useState(0);
-  const ref=useRef(0);
-  useEffect(()=>{
-    const tgt=parseFloat(val)||0,start=ref.current,t0=performance.now();
-    const tick=now=>{
-      const p=Math.min(1,(now-t0)/700),e=1-Math.pow(1-p,3);
+/* ══════════════════════════════════════════════════════════
+   SHARED UI COMPONENTS
+══════════════════════════════════════════════════════════ */
+function Num({ val, pre="", suf="", dec=0 }) {
+  const [d, setD] = useState(0), ref = useRef(0);
+  useEffect(() => {
+    const tgt=parseFloat(val)||0, start=ref.current, t0=performance.now();
+    const tick = now => {
+      const p=Math.min(1,(now-t0)/700), e=1-Math.pow(1-p,3);
       setD(start+e*(tgt-start));
-      if(p<1)requestAnimationFrame(tick);else{setD(tgt);ref.current=tgt;}
+      if (p<1) requestAnimationFrame(tick); else { setD(tgt); ref.current=tgt; }
     };
     requestAnimationFrame(tick);
-  },[val]);
+  }, [val]);
   return <span>{pre}{dec>0?d.toFixed(dec):Math.round(d).toLocaleString()}{suf}</span>;
 }
 
-/* Risk badge */
-function RB({prob,lg}){
-  const pct=Math.round(prob*100);
-  const[bg,fg,lbl]=prob<.2?["#E6FAF2",T.g,"LOW"]:prob<.4?["#FFF7E0",T.a,"MOD"]:prob<.6?["#FFF0D6",T.a,"HIGH"]:["#FFF0F3",T.r,"CRIT"];
-  return(
-    <span className="badge" style={{background:bg,color:fg,border:`1px solid ${fg}50`,
-      fontSize:lg?12:10,padding:lg?"4px 12px":"2px 8px"}}>
-      <span style={{width:5,height:5,borderRadius:"50%",background:fg,display:"inline-block",boxShadow:`0 0 6px ${fg}`}}/>
+function RiskBadge({ prob, lg }) {
+  const pct = Math.round(prob*100);
+  const [bg,fg,lbl] = prob<.2 ? ["#ECFDF5",C.grn,"LOW"] : prob<.4 ? ["#FFFBEB",C.amb,"MOD"] : prob<.6 ? ["#FFF7ED",C.amb,"HIGH"] : ["#FEF2F2",C.red,"CRIT"];
+  return (
+    <span className="badge" style={{ background:bg, color:fg, border:`1px solid ${fg}55`, fontSize:lg?12:10, padding:lg?"4px 12px":"2px 8px" }}>
+      <span style={{ width:5, height:5, borderRadius:"50%", background:fg, display:"inline-block" }}/>
       {lbl} {pct}%
     </span>
   );
 }
 
-/* Progress bar */
-function Bar({val,max,col=T.p,h=4}){
-  return(
-    <div style={{height:h,background:T.b1,borderRadius:h,overflow:"hidden"}}>
-      <div style={{height:"100%",width:`${Math.min(100,(val/max)*100)}%`,
-        background:`linear-gradient(90deg,${col},${col}CC)`,borderRadius:h,
-        boxShadow:`0 0 8px ${col}50`,transition:"width .7s cubic-bezier(.4,0,.2,1)"}}/>
+function PBar({ val, max, col=C.ind, h=4 }) {
+  return (
+    <div style={{ height:h, background:C.inset, borderRadius:h, overflow:"hidden" }}>
+      <div style={{ height:"100%", width:`${Math.min(100,(val/max)*100)}%`, background:`linear-gradient(90deg,${col},${col}BB)`, borderRadius:h, transition:"width .7s cubic-bezier(.4,0,.2,1)" }}/>
     </div>
   );
 }
 
-/* Card wrapper */
-function Card({children,title,sub,accent=T.p,sx={},right,flat}){
-  return(
-    <div className="aril-card" style={sx}>
-      {title&&(
-        <div className="aril-card-header">
+function Card({ children, title, sub, accent=C.ind, sx={}, right, flat }) {
+  return (
+    <div className="card" style={sx}>
+      {title && (
+        <div className="card-hdr">
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:9}}>
-              <div style={{width:3,height:16,borderRadius:2,
-                background:`linear-gradient(180deg,${accent},${accent}66)`,
-                boxShadow:`0 0 10px ${accent}50`}}/>
-              <span style={{color:T.t1,fontWeight:600,fontSize:12,
-                fontFamily:T.sans,textTransform:"uppercase",letterSpacing:"1px"}}>
-                {title}
-              </span>
+            <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+              <div style={{ width:3, height:16, borderRadius:2, background:`linear-gradient(180deg,${accent},${accent}88)` }}/>
+              <span style={{ color:C.tx1, fontWeight:600, fontSize:12, textTransform:"uppercase", letterSpacing:"1px" }}>{title}</span>
             </div>
-            {sub&&<div style={{fontSize:10.5,color:T.t3,marginLeft:12,marginTop:3,fontFamily:T.sans}}>{sub}</div>}
+            {sub && <div style={{ fontSize:10.5, color:C.tx3, marginLeft:12, marginTop:3 }}>{sub}</div>}
           </div>
           {right}
         </div>
       )}
-      <div style={flat?{}:{padding:18}}>{children}</div>
+      <div style={flat ? {} : { padding:18 }}>{children}</div>
     </div>
   );
 }
 
-/* KPI tile */
-function KPI({label,val,sub,col=T.p,icon,delta}){
-  return(
-    <div className="kpi" style={{borderTop:`2px solid ${col}`}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-        <span style={{fontSize:20}}>{icon}</span>
-        {delta!=null&&(
-          <span style={{fontSize:10,fontFamily:T.mono,fontWeight:600,
-            color:delta>=0?T.g:T.r,
-            background:delta>=0?"rgba(10,158,94,.10)":"rgba(212,43,78,.10)",
-            padding:"2px 7px",borderRadius:8}}>
+function KpiTile({ label, val, sub, col=C.ind, icon, delta }) {
+  return (
+    <div className="kpi-tile" style={{ borderTop:`3px solid ${col}` }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+        <span style={{ fontSize:22 }}>{icon}</span>
+        {delta != null && (
+          <span style={{ fontSize:10, fontFamily:C.mono, fontWeight:700, color:delta>=0?C.grn:C.red, background:delta>=0?"#ECFDF5":"#FEF2F2", padding:"2px 8px", borderRadius:8 }}>
             {delta>=0?"▲":"▼"}{Math.abs(delta)}%
           </span>
         )}
       </div>
-      <div style={{fontFamily:T.mono,fontSize:26,fontWeight:700,color:col,lineHeight:1.1,letterSpacing:"-0.5px"}}>{val}</div>
-      <div style={{fontSize:11,color:T.t2,marginTop:7,fontWeight:500,textTransform:"uppercase",letterSpacing:".8px"}}>{label}</div>
-      {sub&&<div style={{fontSize:10.5,color:T.t3,marginTop:3}}>{sub}</div>}
+      <div style={{ fontFamily:C.mono, fontSize:26, fontWeight:700, color:col, lineHeight:1.1, letterSpacing:"-.5px" }}>{val}</div>
+      <div style={{ fontSize:11, color:C.tx2, marginTop:7, fontWeight:500, textTransform:"uppercase", letterSpacing:".8px" }}>{label}</div>
+      {sub && <div style={{ fontSize:10.5, color:C.tx3, marginTop:3 }}>{sub}</div>}
     </div>
   );
 }
 
-/* Chip/tag */
-function Chip({children,col=T.p}){
-  return(
-    <span style={{background:`${col}18`,color:col,border:`1px solid ${col}40`,
-      borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:600,
-      fontFamily:T.mono,letterSpacing:".6px"}}>
+function Chip({ children, col=C.ind }) {
+  return (
+    <span style={{ background:`${col}14`, color:col, border:`1px solid ${col}44`, borderRadius:6, padding:"2px 9px", fontSize:10, fontWeight:700, fontFamily:C.mono, letterSpacing:".5px" }}>
       {children}
     </span>
   );
 }
 
-/* Custom chart tooltip */
-const CTip=({active,payload,label,fmt})=>{
-  if(!active||!payload?.length)return null;
-  return(
-    <div style={TIP}>
-      <div style={{color:T.t3,fontSize:10,marginBottom:6,fontFamily:T.mono,letterSpacing:".5px"}}>{label}</div>
-      {payload.map((p,i)=>(
-        <div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:3}}>
-          <div style={{width:8,height:8,borderRadius:2,background:p.color||p.stroke,flexShrink:0}}/>
-          <span style={{color:T.t2,fontSize:11}}>{p.name}:</span>
-          <span style={{color:T.t1,fontWeight:600,fontSize:11,fontFamily:T.mono}}>
-            {fmt?fmt(p.value):p.value}
-          </span>
+const axTick = { fontSize:10.5, fill:C.tx3, fontFamily:C.mono };
+const GridLines = () => <CartesianGrid strokeDasharray="2 8" stroke="#E8EDF8" vertical={false}/>;
+const CTip = ({ active, payload, label, fmt }) => {
+  if (!active||!payload?.length) return null;
+  return (
+    <div style={TIP_STYLE}>
+      <div style={{ color:C.tx3, fontSize:10, marginBottom:6, fontFamily:C.mono }}>{label}</div>
+      {payload.map((p,i) => (
+        <div key={i} style={{ display:"flex", gap:8, alignItems:"center", marginBottom:3 }}>
+          <div style={{ width:8, height:8, borderRadius:2, background:p.color||p.stroke, flexShrink:0 }}/>
+          <span style={{ color:C.tx2, fontSize:11 }}>{p.name}:</span>
+          <span style={{ color:C.tx1, fontWeight:700, fontSize:11, fontFamily:C.mono }}>{fmt?fmt(p.value):p.value}</span>
         </div>
       ))}
     </div>
   );
 };
 
-const axTick={fontSize:10.5,fill:T.t3,fontFamily:T.mono};
-const grid=<CartesianGrid strokeDasharray="2 8" stroke={T.b1} vertical={false}/>;
-
-/* ═════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    OVERVIEW TAB
-═════════════════════════════════════════════════════════════════*/
-function OverviewTab({patients,optimized,mc}){
-  const highRisk=patients.filter(p=>p.noshow_prob>=0.5);
-  const avgRisk=patients.reduce((s,p)=>s+p.noshow_prob,0)/patients.length;
-  const atRisk=patients.reduce((s,p)=>s+p.revenue*p.noshow_prob,0);
-  const recovered=atRisk*0.68;
+══════════════════════════════════════════════════════════ */
+function OverviewTab({ patients, optimized, mc }) {
+  const highRisk  = patients.filter(p=>p.noshow_prob>=0.5);
+  const avgRisk   = patients.reduce((s,p)=>s+p.noshow_prob,0)/patients.length;
+  const atRisk    = patients.reduce((s,p)=>s+p.revenue*p.noshow_prob,0);
+  const recovered = atRisk*0.68;
 
-  const hourly=Array.from({length:12},(_,i)=>{
-    const h=i+8,pts=optimized.filter(p=>parseInt(p.time)===h);
-    return{hour:`${h}:00`,
-      expected:Math.round(pts.reduce((s,p)=>s+p.expectedRevenue,0)),
-      atRisk:Math.round(pts.reduce((s,p)=>s+p.revenue*p.noshow_prob,0))};
+  const hourly = Array.from({length:12}, (_,i) => {
+    const h=i+8, pts=optimized.filter(p=>parseInt(p.time)===h);
+    return { hour:`${h}:00`, expected:Math.round(pts.reduce((s,p)=>s+p.expectedRevenue,0)), atRisk:Math.round(pts.reduce((s,p)=>s+p.revenue*p.noshow_prob,0)) };
   });
 
-  const cohorts=[
-    {name:"Critical ≥60%",n:patients.filter(p=>p.noshow_prob>=.6).length,c:T.r},
-    {name:"High 40–60%",  n:patients.filter(p=>p.noshow_prob>=.4&&p.noshow_prob<.6).length,c:T.a},
-    {name:"Moderate 20–40%",n:patients.filter(p=>p.noshow_prob>=.2&&p.noshow_prob<.4).length,c:T.s},
-    {name:"Low <20%",     n:patients.filter(p=>p.noshow_prob<.2).length,c:T.g},
+  const cohorts = [
+    { name:"Critical ≥60%", n:patients.filter(p=>p.noshow_prob>=.6).length,  col:C.red },
+    { name:"High 40–60%",   n:patients.filter(p=>p.noshow_prob>=.4&&p.noshow_prob<.6).length, col:C.amb },
+    { name:"Moderate 20–40%",n:patients.filter(p=>p.noshow_prob>=.2&&p.noshow_prob<.4).length,col:C.tea },
+    { name:"Low <20%",      n:patients.filter(p=>p.noshow_prob<.2).length,   col:C.grn },
   ];
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:20,animation:"fadeUp .35s ease"}}>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeUp .35s ease" }}>
 
-      {/* ── KPI Row ── */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14}}>
-        <KPI icon="🗓" label="Appointments Today" val={<Num val={patients.length}/>} col={T.p} sub="Full day schedule"/>
-        <KPI icon="📉" label="Avg No-Show Risk" val={<Num val={avgRisk*100} dec={1} suf="%"/>} col={avgRisk>.25?T.a:T.g} delta={-8}/>
-        <KPI icon="🚨" label="Critical Risk" val={<Num val={highRisk.length}/>} col={T.r} sub="Prob above 50%"/>
-        <KPI icon="💸" label="Revenue at Risk" val={<Num val={Math.round(atRisk)} pre="$"/>} col={T.a} sub="Without intervention"/>
-        <KPI icon="💰" label="ARIL Recovery Est." val={<Num val={Math.round(recovered)} pre="$"/>} col={T.g} delta={12}/>
+      {/* KPIs */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:14 }}>
+        <KpiTile icon="🗓" label="Appointments Today"   val={<Num val={patients.length}/>}                          col={C.ind} sub="Full day schedule"/>
+        <KpiTile icon="📉" label="Avg No-Show Risk"     val={<Num val={avgRisk*100} dec={1} suf="%"/>}              col={avgRisk>.25?C.amb:C.grn} delta={-8}/>
+        <KpiTile icon="🚨" label="Critical Risk"        val={<Num val={highRisk.length}/>}                          col={C.red}  sub="Prob above 50%"/>
+        <KpiTile icon="💸" label="Revenue at Risk"      val={<Num val={Math.round(atRisk)} pre="$"/>}               col={C.amb}  sub="Without intervention"/>
+        <KpiTile icon="💰" label="ARIL Recovery Est."   val={<Num val={Math.round(recovered)} pre="$"/>}            col={C.grn}  delta={12}/>
       </div>
 
-      {/* ── Charts row ── */}
-      <div style={{display:"grid",gridTemplateColumns:"2.3fr 1fr",gap:16}}>
-
-        <Card title="Hourly Revenue Intelligence" sub="Expected revenue recovery vs. at-risk revenue block by block" accent={T.p}>
+      {/* Charts row */}
+      <div style={{ display:"grid", gridTemplateColumns:"2.3fr 1fr", gap:16 }}>
+        <Card title="Hourly Revenue Intelligence" sub="Expected recovery vs. revenue at risk — per hour block" accent={C.ind}>
           <ResponsiveContainer width="100%" height={215}>
             <BarChart data={hourly} barGap={3} barCategoryGap="28%">
               <defs>
                 <linearGradient id="gE" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={T.p}/><stop offset="100%" stopColor={T.pL} stopOpacity={.5}/>
+                  <stop offset="0%" stopColor={C.ind}/><stop offset="100%" stopColor={C.ind} stopOpacity={.4}/>
                 </linearGradient>
                 <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={T.r}/><stop offset="100%" stopColor={T.rL} stopOpacity={.4}/>
+                  <stop offset="0%" stopColor={C.red}/><stop offset="100%" stopColor={C.red} stopOpacity={.3}/>
                 </linearGradient>
               </defs>
-              {grid}
+              <GridLines/>
               <XAxis dataKey="hour" tick={axTick} axisLine={false} tickLine={false}/>
               <YAxis tick={axTick} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`}/>
               <Tooltip content={<CTip fmt={v=>`$${v.toLocaleString()}`}/>}/>
               <Bar dataKey="expected" name="Expected Rev" fill="url(#gE)" radius={[4,4,0,0]}/>
-              <Bar dataKey="atRisk"   name="At-Risk Rev"  fill="url(#gR)" radius={[4,4,0,0]} opacity={.8}/>
+              <Bar dataKey="atRisk"   name="At-Risk Rev"  fill="url(#gR)" radius={[4,4,0,0]} opacity={.85}/>
             </BarChart>
           </ResponsiveContainer>
-          <div style={{display:"flex",gap:18,paddingTop:10,borderTop:`1px solid ${T.b1}`}}>
-            {[[T.p,"Expected Revenue"],[T.r,"At-Risk Revenue"]].map(([c,l])=>(
-              <div key={l} style={{display:"flex",alignItems:"center",gap:6}}>
-                <div style={{width:10,height:10,borderRadius:2,background:c}}/>
-                <span style={{fontSize:11,color:T.t2}}>{l}</span>
+          <div style={{ display:"flex", gap:18, paddingTop:10, borderTop:`1px solid ${C.br1}` }}>
+            {[[C.ind,"Expected Revenue"],[C.red,"At-Risk Revenue"]].map(([col,lbl])=>(
+              <div key={lbl} style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <div style={{ width:10, height:10, borderRadius:2, background:col }}/>
+                <span style={{ fontSize:11, color:C.tx2 }}>{lbl}</span>
               </div>
             ))}
           </div>
         </Card>
 
-        <Card title="Risk Cohorts" accent={T.s}>
-          <div style={{display:"flex",flexDirection:"column",gap:15,paddingTop:4}}>
+        <Card title="Risk Distribution" accent={C.tea}>
+          <div style={{ display:"flex", flexDirection:"column", gap:15, paddingTop:4 }}>
             {cohorts.map(c=>(
               <div key={c.name}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <div style={{display:"flex",alignItems:"center",gap:7}}>
-                    <div style={{width:8,height:8,borderRadius:2,background:c.c}}/>
-                    <span style={{fontSize:11.5,color:T.t2}}>{c.name}</span>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:c.col }}/>
+                    <span style={{ fontSize:11.5, color:C.tx2 }}>{c.name}</span>
                   </div>
-                  <span style={{fontSize:16,fontWeight:700,color:c.c,fontFamily:T.mono}}>{c.n}</span>
+                  <span style={{ fontSize:16, fontWeight:700, color:c.col, fontFamily:C.mono }}>{c.n}</span>
                 </div>
-                <Bar val={c.n} max={patients.length} col={c.c} h={5}/>
+                <PBar val={c.n} max={patients.length} col={c.col} h={5}/>
               </div>
             ))}
-            <div style={{marginTop:8,padding:"12px 14px",background:T.bg4,borderRadius:10,border:`1px solid ${T.b2}`}}>
-              <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:"1.8px",marginBottom:3,fontFamily:T.mono}}>Model · AUC-ROC</div>
-              <div style={{fontFamily:T.mono,fontSize:24,fontWeight:700,
-                background:`linear-gradient(135deg,${T.p},${T.s})`,
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-                0.847
-              </div>
-              <div style={{fontSize:10.5,color:T.t3,marginTop:3}}>XGBoost + LightGBM + LR</div>
+            <div style={{ marginTop:8, padding:"12px 14px", background:C.inset, borderRadius:10, border:`1px solid ${C.br2}` }}>
+              <div style={{ fontSize:9, color:C.tx3, textTransform:"uppercase", letterSpacing:"1.8px", marginBottom:3, fontFamily:C.mono }}>Model · AUC-ROC</div>
+              <div style={{ fontFamily:C.mono, fontSize:24, fontWeight:700, background:`linear-gradient(135deg,${C.ind},${C.tea})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>0.847</div>
+              <div style={{ fontSize:10.5, color:C.tx3, marginTop:3 }}>XGBoost + LightGBM + LR Ensemble</div>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* ── MC summary strip ── */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+      {/* MC strip */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
         {[
-          {icon:"📊",label:"Baseline Daily Revenue",val:`$${Math.round(mc.base).toLocaleString()}`,sub:"No-ARIL scenario",col:T.t3},
-          {icon:"🎯",label:"ARIL P50 Daily Revenue",val:`$${Math.round(mc.p50).toLocaleString()}`,sub:`P10 $${Math.round(mc.p10).toLocaleString()} · P90 $${Math.round(mc.p90).toLocaleString()}`,col:T.p},
-          {icon:"📈",label:"Annual Revenue Uplift",val:`$${(mc.annualLift/1000).toFixed(0)}K`,sub:`Break-even in ${mc.breakEven} days`,col:T.a},
+          { icon:"📊", label:"Baseline Daily Revenue", val:`$${Math.round(mc.base).toLocaleString()}`,  sub:"Without ARIL", col:C.tx3 },
+          { icon:"🎯", label:"ARIL P50 Daily Revenue", val:`$${Math.round(mc.p50).toLocaleString()}`,   sub:`P10 $${Math.round(mc.p10).toLocaleString()} · P90 $${Math.round(mc.p90).toLocaleString()}`, col:C.ind },
+          { icon:"📈", label:"Annual Revenue Uplift",  val:`$${(mc.annualLift/1000).toFixed(0)}K`,      sub:`Break-even in ${mc.breakEven} days`, col:C.amb },
         ].map(k=>(
-          <div key={k.label} className="kpi" style={{borderLeft:`3px solid ${k.col}`,borderTop:"none",display:"flex",gap:14,alignItems:"center"}}>
-            <span style={{fontSize:28,flexShrink:0}}>{k.icon}</span>
+          <div key={k.label} className="kpi-tile" style={{ borderLeft:`3px solid ${k.col}`, borderTop:"none", display:"flex", gap:14, alignItems:"center" }}>
+            <span style={{ fontSize:28, flexShrink:0 }}>{k.icon}</span>
             <div>
-              <div style={{fontFamily:T.mono,fontSize:22,fontWeight:700,color:k.col,letterSpacing:"-.5px"}}>{k.val}</div>
-              <div style={{fontSize:11,color:T.t2,textTransform:"uppercase",letterSpacing:".8px",marginTop:4}}>{k.label}</div>
-              <div style={{fontSize:10.5,color:T.t3,marginTop:2}}>{k.sub}</div>
+              <div style={{ fontFamily:C.mono, fontSize:22, fontWeight:700, color:k.col, letterSpacing:"-.5px" }}>{k.val}</div>
+              <div style={{ fontSize:11, color:C.tx2, textTransform:"uppercase", letterSpacing:".8px", marginTop:4 }}>{k.label}</div>
+              <div style={{ fontSize:10.5, color:C.tx3, marginTop:2 }}>{k.sub}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Risk Queue ── */}
-      <Card title="Live Intervention Queue" sub="Patients requiring immediate action — sorted by risk severity"
-        accent={T.r}
-        right={<Chip col={T.r}>{highRisk.length} CRITICAL</Chip>}>
-        <div style={{position:"relative",overflow:"hidden"}}>
-          <div className="sweep"/>
+      {/* Risk queue */}
+      <Card title="Live Intervention Queue" sub="Patients requiring immediate action — sorted by risk severity" accent={C.red} right={<Chip col={C.red}>{highRisk.length} CRITICAL</Chip>}>
+        <div style={{ position:"relative", overflow:"hidden" }}>
+          <div className="sweep-line"/>
           {highRisk.length===0
-            ?<div style={{textAlign:"center",color:T.t3,padding:32}}>
-               <div style={{fontSize:26,marginBottom:8}}>✅</div>
-               <div style={{fontSize:13,color:T.t2}}>No critical-risk patients today</div>
-             </div>
-            :<div>
-              {highRisk.sort((a,b)=>b.noshow_prob-a.noshow_prob).map((p,i)=>(
-                <div key={p.id} style={{display:"flex",alignItems:"center",gap:14,
-                  padding:"11px 14px",borderRadius:8,
-                  background:i%2===0?T.bg4:"transparent",transition:"background .1s"}}>
-                  <div style={{width:8,height:8,borderRadius:"50%",background:T.r,
-                    boxShadow:`0 0 10px ${T.r}`,flexShrink:0,
-                    animation:"blink 1.8s ease infinite"}}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <span style={{color:T.t1,fontWeight:600,fontSize:13}}>{p.name}</span>
-                    <span style={{color:T.t3,fontSize:11,marginLeft:10}}>{p.service} · {p.time} · {p.provider}</span>
+            ? <div style={{ textAlign:"center", padding:32 }}>
+                <div style={{ fontSize:26, marginBottom:8 }}>✅</div>
+                <div style={{ fontSize:13, color:C.tx2 }}>No critical-risk patients today</div>
+              </div>
+            : <div>
+                {highRisk.sort((a,b)=>b.noshow_prob-a.noshow_prob).map((p,i)=>(
+                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"11px 14px", borderRadius:8, background:i%2===0?C.inset:"transparent", transition:"background .1s" }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:C.red, flexShrink:0, animation:"pulse 1.8s ease infinite" }}/>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <span style={{ color:C.tx1, fontWeight:600, fontSize:13 }}>{p.name}</span>
+                      <span style={{ color:C.tx3, fontSize:11, marginLeft:10 }}>{p.service} · {p.time} · {p.provider}</span>
+                    </div>
+                    <RiskBadge prob={p.noshow_prob}/>
+                    <span style={{ fontFamily:C.mono, fontSize:12, color:C.amb, minWidth:95, textAlign:"right", fontWeight:700 }}>${p.revenue} at risk</span>
+                    <span style={{ fontSize:11.5, color:C.tea, minWidth:115, textAlign:"right", fontWeight:600 }}>{p.shouldOverbook?"⚡ Overbook":"📲 Call + Remind"}</span>
                   </div>
-                  <RB prob={p.noshow_prob}/>
-                  <span style={{fontFamily:T.mono,fontSize:12,color:T.a,minWidth:95,textAlign:"right",fontWeight:600}}>${p.revenue} at risk</span>
-                  <span style={{fontSize:11.5,color:T.s,minWidth:115,textAlign:"right",fontWeight:500}}>
-                    {p.shouldOverbook?"⚡ Overbook":"📲 Call + Remind"}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
           }
         </div>
       </Card>
@@ -542,104 +478,80 @@ function OverviewTab({patients,optimized,mc}){
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    PREDICTION TAB
-═════════════════════════════════════════════════════════════════*/
-function PredictionTab({patients}){
-  const[sel,setSel]=useState(patients[0]);
-  const[form,setForm]=useState({prev_noshow_rate:.25,lead_time_days:14,age:35,day_of_week:2,time_slot:"morning",reminder_sent:false,distance_km:12,insurance_type:"public",sms_confirmed:false,is_new:true});
-  const live=useMemo(()=>predict(form),[form]);
-  const selExp=useMemo(()=>sel?explain(sel):[],[sel]);
-  const roc=[{x:0,y:0},{x:.02,y:.14},{x:.05,y:.31},{x:.1,y:.52},{x:.15,y:.64},{x:.2,y:.72},{x:.3,y:.82},{x:.4,y:.88},{x:.5,y:.92},{x:.7,y:.96},{x:1,y:1}];
-  const rc=p=>p<.2?T.g:p<.4?T.s:p<.6?T.a:T.r;
+══════════════════════════════════════════════════════════ */
+function PredictionTab({ patients }) {
+  const [sel,  setSel]  = useState(patients[0]);
+  const [form, setForm] = useState({ prev_noshow_rate:.25, lead_time_days:14, age:35, day_of_week:2, time_slot:"morning", reminder_sent:false, distance_km:12, insurance_type:"public", sms_confirmed:false, is_new:true });
+  const live   = useMemo(()=>predict(form),[form]);
+  const selExp = useMemo(()=>sel?explain(sel):[],[sel]);
+  const roc    = [{x:0,y:0},{x:.02,y:.14},{x:.05,y:.31},{x:.1,y:.52},{x:.15,y:.64},{x:.2,y:.72},{x:.3,y:.82},{x:.4,y:.88},{x:.5,y:.92},{x:.7,y:.96},{x:1,y:1}];
+  const rc     = p => p<.2?C.grn:p<.4?C.tea:p<.6?C.amb:C.red;
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeUp .35s ease"}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:18, animation:"fadeUp .35s ease" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
 
-        {/* ── Patient Queue ── */}
-        <Card title="Appointment Queue" sub="Click any row to view SHAP-style risk explanation" accent={T.p}
-          right={<Chip col={T.p}>AUC 0.847</Chip>}>
-          <div style={{maxHeight:420,overflowY:"auto",paddingRight:2}}>
+        {/* Queue */}
+        <Card title="Appointment Queue" sub="Click any row to see full SHAP-style risk explanation" accent={C.ind} right={<Chip col={C.ind}>AUC 0.847</Chip>}>
+          <div style={{ maxHeight:420, overflowY:"auto" }}>
             {patients.slice().sort((a,b)=>b.noshow_prob-a.noshow_prob).map(p=>(
               <div key={p.id} onClick={()=>setSel(p)}
-                style={{display:"flex",alignItems:"center",gap:11,padding:"10px 12px",
-                  marginBottom:3,borderRadius:9,cursor:"pointer",
-                  border:`1px solid ${sel?.id===p.id?T.p+"60":"transparent"}`,
-                  background:sel?.id===p.id?`${T.p}0F`:T.bg1+"40",
-                  transition:"all .12s"}}>
-                <div style={{width:33,height:33,borderRadius:"50%",flexShrink:0,
-                  background:`linear-gradient(135deg,${T.p}30,${T.s}18)`,
-                  border:`1px solid ${T.b2}`,
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  fontSize:12,fontWeight:700,color:T.pL,fontFamily:T.mono}}>
+                style={{ display:"flex", alignItems:"center", gap:11, padding:"10px 12px", marginBottom:3, borderRadius:9, cursor:"pointer",
+                  border:`1px solid ${sel?.id===p.id?C.ind+"55":"transparent"}`,
+                  background:sel?.id===p.id?`${C.ind}0C`:C.surface,
+                  transition:"all .12s" }}>
+                <div style={{ width:33, height:33, borderRadius:"50%", flexShrink:0, background:`linear-gradient(135deg,${C.ind}25,${C.tea}18)`, border:`1px solid ${C.br2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:C.ind, fontFamily:C.mono }}>
                   {p.name[0]}
                 </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:600,color:T.t1}}>{p.name}</div>
-                  <div style={{fontSize:10.5,color:T.t3,marginTop:1}}>{p.service} · {p.time} · {p.provider}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.tx1 }}>{p.name}</div>
+                  <div style={{ fontSize:10.5, color:C.tx3, marginTop:1 }}>{p.service} · {p.time} · {p.provider}</div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3}}>
-                  <RB prob={p.noshow_prob}/>
-                  <span style={{fontSize:9,color:T.t3,fontFamily:T.mono}}>[{(p.conf_lo*100).toFixed(0)}–{(p.conf_hi*100).toFixed(0)}%]</span>
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:3 }}>
+                  <RiskBadge prob={p.noshow_prob}/>
+                  <span style={{ fontSize:9, color:C.tx3, fontFamily:C.mono }}>[{(p.conf_lo*100).toFixed(0)}–{(p.conf_hi*100).toFixed(0)}%]</span>
                 </div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* ── SHAP Explanation ── */}
-        {sel&&(
-          <Card title={`Risk Breakdown · ${sel.name}`} sub="SHAP-style feature attribution — which factors drive risk" accent={T.s}>
-            {/* Gauge */}
-            <div style={{display:"flex",justifyContent:"center",marginBottom:16}}>
-              <div style={{position:"relative",width:130,height:130}}>
-                <svg width="130" height="130" style={{overflow:"visible"}}>
-                  <circle cx="65" cy="65" r="52" fill="none" stroke={T.b1} strokeWidth="9"/>
-                  <circle cx="65" cy="65" r="52" fill="none"
-                    stroke={rc(sel.noshow_prob)} strokeWidth="9" strokeLinecap="round"
-                    strokeDasharray={`${sel.noshow_prob*327} 327`}
-                    transform="rotate(-90 65 65)"
-                    style={{filter:`drop-shadow(0 0 10px ${rc(sel.noshow_prob)}90)`,
-                      transition:"stroke-dasharray .6s ease"}}/>
+        {/* SHAP */}
+        {sel && (
+          <Card title={`Risk Breakdown · ${sel.name}`} sub="SHAP-style feature attribution — what drives the risk score" accent={C.tea}>
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
+              <div style={{ position:"relative", width:130, height:130 }}>
+                <svg width="130" height="130" style={{ overflow:"visible" }}>
+                  <circle cx="65" cy="65" r="52" fill="none" stroke={C.inset} strokeWidth="9"/>
+                  <circle cx="65" cy="65" r="52" fill="none" stroke={rc(sel.noshow_prob)} strokeWidth="9" strokeLinecap="round"
+                    strokeDasharray={`${sel.noshow_prob*327} 327`} transform="rotate(-90 65 65)"
+                    style={{ filter:`drop-shadow(0 0 8px ${rc(sel.noshow_prob)}80)`, transition:"stroke-dasharray .6s ease" }}/>
                 </svg>
-                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",
-                  alignItems:"center",justifyContent:"center"}}>
-                  <div style={{fontFamily:T.mono,fontSize:27,fontWeight:700,
-                    color:rc(sel.noshow_prob),letterSpacing:"-1px"}}>
-                    {(sel.noshow_prob*100).toFixed(0)}%
-                  </div>
-                  <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:"1.3px",marginTop:2}}>
-                    NO-SHOW RISK
-                  </div>
+                <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ fontFamily:C.mono, fontSize:26, fontWeight:700, color:rc(sel.noshow_prob), letterSpacing:"-1px" }}>{(sel.noshow_prob*100).toFixed(0)}%</div>
+                  <div style={{ fontSize:9, color:C.tx3, textTransform:"uppercase", letterSpacing:"1.3px", marginTop:2 }}>NO-SHOW RISK</div>
                 </div>
               </div>
             </div>
-
-            {/* Waterfall bars */}
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12,
-              fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:"1.5px",fontFamily:T.mono}}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12, fontSize:9, color:C.tx3, textTransform:"uppercase", letterSpacing:"1.5px", fontFamily:C.mono }}>
               <span>Base 18%</span>
-              <div style={{flex:1,height:1,background:T.b1}}/>
-              <span style={{color:rc(sel.noshow_prob)}}>→ Final {(sel.noshow_prob*100).toFixed(0)}%</span>
+              <div style={{ flex:1, height:1, background:C.br1 }}/>
+              <span style={{ color:rc(sel.noshow_prob) }}>→ Final {(sel.noshow_prob*100).toFixed(0)}%</span>
             </div>
             {selExp.map(c=>(
-              <div key={c.name} style={{marginBottom:9}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                  <span style={{fontSize:11.5,color:T.t2}}>{c.name}</span>
-                  <span style={{fontSize:10,fontFamily:T.mono,fontWeight:600,
-                    color:c.contrib>.005?T.rL:c.contrib<-.005?T.gL:T.t3}}>
+              <div key={c.name} style={{ marginBottom:9 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                  <span style={{ fontSize:11.5, color:C.tx2 }}>{c.name}</span>
+                  <span style={{ fontSize:10, fontFamily:C.mono, fontWeight:700, color:c.contrib>.005?C.red:c.contrib<-.005?C.grn:C.tx3 }}>
                     {c.contrib>.005?"+":""}{(c.contrib*100).toFixed(1)}pp
-                    <span style={{color:T.t3,fontWeight:400}}> ({c.display})</span>
+                    <span style={{ color:C.tx3, fontWeight:400 }}> ({c.display})</span>
                   </span>
                 </div>
-                <div style={{height:5,background:T.b1,borderRadius:3,position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",left:"50%",top:0,width:1,height:"100%",background:T.b2}}/>
-                  <div style={{position:"absolute",height:"100%",
-                    width:`${Math.min(48,Math.abs(c.contrib)*200)}%`,
-                    background:c.contrib>.005?T.r:c.contrib<-.005?T.g:T.b2,
-                    borderRadius:3,[c.contrib>=0?"left":"right"]:"50%",
-                    boxShadow:Math.abs(c.contrib)>.01?`0 0 6px ${c.contrib>0?T.r:T.g}80`:undefined}}/>
+                <div style={{ height:5, background:C.inset, borderRadius:3, position:"relative", overflow:"hidden" }}>
+                  <div style={{ position:"absolute", left:"50%", top:0, width:1, height:"100%", background:C.br2 }}/>
+                  <div style={{ position:"absolute", height:"100%", width:`${Math.min(48,Math.abs(c.contrib)*200)}%`, background:c.contrib>.005?C.red:c.contrib<-.005?C.grn:C.br2, borderRadius:3, [c.contrib>=0?"left":"right"]:"50%" }}/>
                 </div>
               </div>
             ))}
@@ -647,96 +559,81 @@ function PredictionTab({patients}){
         )}
       </div>
 
-      {/* ── Live predictor + ROC ── */}
-      <div style={{display:"grid",gridTemplateColumns:"1.6fr 1fr",gap:16}}>
-        <Card title="Live Prediction Engine" sub="Adjust any feature — ensemble model recalculates in real-time" accent={T.p}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+      {/* Live predictor + ROC */}
+      <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:16 }}>
+        <Card title="Live Prediction Engine" sub="Adjust any feature — ensemble model recalculates in real-time" accent={C.ind}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
             {[
-              {k:"prev_noshow_rate",l:"Prior No-Show Rate",min:0,max:.9,step:.01,fmt:v=>`${(v*100).toFixed(0)}%`,col:T.r},
-              {k:"lead_time_days",  l:"Lead Time (days)",  min:1,max:60,fmt:v=>`${v}d`,col:T.a},
-              {k:"age",             l:"Patient Age",        min:18,max:85,fmt:v=>`${v}yr`,col:T.s},
-              {k:"distance_km",    l:"Distance (km)",     min:1,max:50,fmt:v=>`${v}km`,col:T.p},
+              { k:"prev_noshow_rate", l:"Prior No-Show Rate", min:0, max:.9, step:.01, fmt:v=>`${(v*100).toFixed(0)}%`, col:C.red },
+              { k:"lead_time_days",   l:"Lead Time (days)",   min:1, max:60, fmt:v=>`${v}d`, col:C.amb },
+              { k:"age",              l:"Patient Age",         min:18, max:85, fmt:v=>`${v}yr`, col:C.tea },
+              { k:"distance_km",     l:"Distance (km)",      min:1, max:50, fmt:v=>`${v}km`, col:C.ind },
             ].map(f=>(
               <div key={f.k}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                  <label style={{fontSize:11.5,color:T.t2}}>{f.l}</label>
-                  <span style={{fontSize:11,fontFamily:T.mono,color:f.col,fontWeight:700}}>{f.fmt(form[f.k])}</span>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                  <label style={{ fontSize:11.5, color:C.tx2 }}>{f.l}</label>
+                  <span style={{ fontSize:11, fontFamily:C.mono, color:f.col, fontWeight:700 }}>{f.fmt(form[f.k])}</span>
                 </div>
                 <input type="range" min={f.min} max={f.max} step={f.step||1} value={form[f.k]}
                   onChange={e=>setForm(p=>({...p,[f.k]:parseFloat(e.target.value)}))}
-                  style={{accentColor:f.col}}/>
+                  style={{ accentColor:f.col }}/>
               </div>
             ))}
           </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16 }}>
             {[["reminder_sent","Reminder Sent","📲"],["sms_confirmed","SMS Confirmed","✅"],["is_new","New Patient","🆕"]].map(([k,l,ic])=>(
-              <label key={k} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",
-                padding:"9px 11px",borderRadius:9,transition:"all .12s",
-                background:form[k]?`${T.p}14`:T.bg4,
-                border:`1px solid ${form[k]?T.p+"50":T.b1}`}}>
+              <label key={k} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", padding:"9px 11px", borderRadius:9, transition:"all .12s", background:form[k]?`${C.ind}0F`:C.surface, border:`1px solid ${form[k]?C.ind+"55":C.br1}` }}>
                 <input type="checkbox" checked={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.checked}))}/>
-                <span style={{fontSize:11,color:form[k]?T.pLL:T.t2}}>{ic} {l}</span>
+                <span style={{ fontSize:11, color:form[k]?C.indD:C.tx2 }}>{ic} {l}</span>
               </label>
             ))}
           </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
             {[
-              {k:"day_of_week",l:"Day of Week",opts:[[1,"Monday"],[2,"Tuesday"],[3,"Wednesday"],[4,"Thursday"],[5,"Friday"]]},
-              {k:"insurance_type",l:"Insurance",opts:[["public","Public / Medicare"],["private","Private Insurance"]]},
+              { k:"day_of_week",    l:"Day of Week",   opts:[[1,"Monday"],[2,"Tuesday"],[3,"Wednesday"],[4,"Thursday"],[5,"Friday"]] },
+              { k:"insurance_type", l:"Insurance Type", opts:[["public","Public / Medicare"],["private","Private Insurance"]] },
             ].map(f=>(
               <div key={f.k}>
-                <label style={{fontSize:11.5,color:T.t2,display:"block",marginBottom:5}}>{f.l}</label>
+                <label style={{ fontSize:11.5, color:C.tx2, display:"block", marginBottom:5 }}>{f.l}</label>
                 <select value={form[f.k]} onChange={e=>setForm(p=>({...p,[f.k]:isNaN(e.target.value)?e.target.value:parseInt(e.target.value)}))}>
                   {f.opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}
                 </select>
               </div>
             ))}
           </div>
-
-          {/* Result box */}
-          <div style={{padding:"16px 20px",borderRadius:12,
-            border:`2px solid ${rc(live)}50`,
-            background:`linear-gradient(135deg,${rc(live)}0A,${rc(live)}05)`,
-            display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{ padding:"16px 20px", borderRadius:12, border:`2px solid ${rc(live)}55`, background:`${rc(live)}08`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
             <div>
-              <div style={{fontSize:10,color:T.t3,textTransform:"uppercase",letterSpacing:"1.8px",fontFamily:T.mono,marginBottom:4}}>Ensemble Output</div>
-              <div style={{fontFamily:T.mono,fontSize:38,fontWeight:700,color:rc(live),letterSpacing:"-2px",lineHeight:1}}>
-                {(live*100).toFixed(1)}%
-              </div>
+              <div style={{ fontSize:10, color:C.tx3, textTransform:"uppercase", letterSpacing:"1.8px", fontFamily:C.mono, marginBottom:4 }}>Ensemble Output</div>
+              <div style={{ fontFamily:C.mono, fontSize:38, fontWeight:700, color:rc(live), letterSpacing:"-2px", lineHeight:1 }}>{(live*100).toFixed(1)}%</div>
             </div>
-            <div style={{textAlign:"right"}}>
-              <RB prob={live} lg/>
-              <div style={{fontSize:12,color:T.t2,marginTop:9}}>
-                {live>.5?"⚡ Overbook + Call Now":live>.3?"📲 Send SMS Reminder":"✅ Standard Monitoring"}
-              </div>
+            <div style={{ textAlign:"right" }}>
+              <RiskBadge prob={live} lg/>
+              <div style={{ fontSize:12, color:C.tx2, marginTop:9 }}>{live>.5?"⚡ Overbook + Call Now":live>.3?"📲 Send SMS Reminder":"✅ Standard Monitoring"}</div>
             </div>
           </div>
         </Card>
 
-        <Card title="ROC Curve" sub="Ensemble model discrimination · AUC = 0.847" accent={T.s}>
+        <Card title="ROC Curve" sub="Ensemble discrimination · AUC = 0.847" accent={C.tea}>
           <ResponsiveContainer width="100%" height={234}>
-            <LineChart margin={{top:8,right:8,bottom:24,left:0}}>
+            <LineChart margin={{ top:8, right:8, bottom:24, left:0 }}>
               <defs>
                 <linearGradient id="rocG" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={T.p}/><stop offset="100%" stopColor={T.s}/>
+                  <stop offset="0%" stopColor={C.ind}/><stop offset="100%" stopColor={C.tea}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="2 8" stroke={T.b1}/>
-              <XAxis dataKey="x" type="number" domain={[0,1]} tick={axTick}
-                label={{value:"False Positive Rate",position:"insideBottom",offset:-10,fontSize:10,fill:T.t3}}/>
+              <GridLines/>
+              <XAxis dataKey="x" type="number" domain={[0,1]} tick={axTick} label={{ value:"False Positive Rate", position:"insideBottom", offset:-10, fontSize:10, fill:C.tx3 }}/>
               <YAxis type="number" domain={[0,1]} tick={axTick}/>
-              <Tooltip contentStyle={TIP} formatter={v=>v.toFixed(3)}/>
-              <Line data={roc} type="monotone" dataKey="y" stroke="url(#rocG)" strokeWidth={2.5} dot={false} name="ARIL" style={{filter:`drop-shadow(0 0 6px ${T.p}80)`}}/>
-              <Line data={[{x:0,y:0},{x:1,y:1}]} type="monotone" dataKey="y" stroke={T.b2} strokeWidth={1} dot={false} strokeDasharray="5 4" name="Random"/>
+              <Tooltip contentStyle={TIP_STYLE} formatter={v=>v.toFixed(3)}/>
+              <Line data={roc} type="monotone" dataKey="y" stroke="url(#rocG)" strokeWidth={2.5} dot={false} name="ARIL"/>
+              <Line data={[{x:0,y:0},{x:1,y:1}]} type="monotone" dataKey="y" stroke={C.br2} strokeWidth={1} dot={false} strokeDasharray="5 4" name="Random"/>
             </LineChart>
           </ResponsiveContainer>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:6}}>
-            {[["AUC-ROC","0.847",T.p],["Precision","0.71",T.s],["Recall","0.68",T.g],["F1 Score","0.69",T.a]].map(([k,v,c])=>(
-              <div key={k} style={{background:T.bg4,borderRadius:8,padding:"10px 12px",textAlign:"center",border:`1px solid ${T.b1}`}}>
-                <div style={{fontFamily:T.mono,fontSize:19,fontWeight:700,color:c,letterSpacing:"-.5px"}}>{v}</div>
-                <div style={{fontSize:9.5,color:T.t3,textTransform:"uppercase",letterSpacing:"1px",marginTop:2}}>{k}</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:6 }}>
+            {[["AUC-ROC","0.847",C.ind],["Precision","0.71",C.tea],["Recall","0.68",C.grn],["F1 Score","0.69",C.amb]].map(([k,v,col])=>(
+              <div key={k} style={{ background:C.surface, borderRadius:8, padding:"10px 12px", textAlign:"center", border:`1px solid ${C.br1}` }}>
+                <div style={{ fontFamily:C.mono, fontSize:19, fontWeight:700, color:col, letterSpacing:"-.5px" }}>{v}</div>
+                <div style={{ fontSize:9.5, color:C.tx3, textTransform:"uppercase", letterSpacing:"1px", marginTop:2 }}>{k}</div>
               </div>
             ))}
           </div>
@@ -746,61 +643,56 @@ function PredictionTab({patients}){
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    SCHEDULING TAB
-═════════════════════════════════════════════════════════════════*/
-function SchedulingTab({optimized,waitlist}){
-  const[pen,setPen]=useState(1.75);
-  const reOpt=useMemo(()=>optimized.map(p=>optSlot(p,pen)),[optimized,pen]);
-  const totalExp=reOpt.reduce((s,p)=>s+p.expectedRevenue,0);
-  const obCount=reOpt.filter(p=>p.shouldOverbook).length;
-  const oppCost=reOpt.reduce((s,p)=>s+p.opportunityCost,0);
-  const provData=PROVS.map(pr=>{
+══════════════════════════════════════════════════════════ */
+function SchedulingTab({ optimized, waitlist }) {
+  const [pen, setPen] = useState(1.75);
+  const reOpt    = useMemo(()=>optimized.map(p=>optSlot(p,pen)),[optimized,pen]);
+  const totalExp = reOpt.reduce((s,p)=>s+p.expectedRevenue,0);
+  const obCount  = reOpt.filter(p=>p.shouldOverbook).length;
+  const oppCost  = reOpt.reduce((s,p)=>s+p.opportunityCost,0);
+  const provData = PROVS.map(pr=>{
     const pts=reOpt.filter(p=>p.provider===pr);
-    return{name:pr.replace("Dr. ",""),slots:pts.length,rev:Math.round(pts.reduce((s,p)=>s+p.expectedRevenue,0)),risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(0):0};
+    return { name:pr.replace("Dr. ",""), slots:pts.length, rev:Math.round(pts.reduce((s,p)=>s+p.expectedRevenue,0)), risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(0):0 };
   }).filter(p=>p.slots>0);
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeUp .35s ease"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-        <KPI icon="💰" label="Expected Revenue" val={<Num val={Math.round(totalExp)} pre="$"/>} col={T.p} sub="Risk-adjusted"/>
-        <KPI icon="⚡" label="Overbook Slots" val={<Num val={obCount}/>} col={T.a} sub="EV-positive decisions"/>
-        <KPI icon="🔥" label="Opportunity Cost" val={<Num val={Math.round(oppCost)} pre="$"/>} col={T.r} sub="If no action taken"/>
-        <div className="kpi" style={{borderTop:`2px solid ${T.s}`}}>
-          <div style={{fontSize:20,marginBottom:8}}>🎛️</div>
-          <div style={{fontFamily:T.mono,fontSize:24,fontWeight:700,color:T.s}}>{pen.toFixed(2)}×</div>
-          <div style={{fontSize:10.5,color:T.t2,textTransform:"uppercase",letterSpacing:".8px",margin:"5px 0 8px"}}>Penalty Factor</div>
-          <input type="range" min={1.0} max={3.0} step={0.05} value={pen} onChange={e=>setPen(parseFloat(e.target.value))} style={{accentColor:T.s}}/>
-          <div style={{fontSize:10,color:T.t3,marginTop:4}}>Overbooking aggressiveness</div>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:18, animation:"fadeUp .35s ease" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+        <KpiTile icon="💰" label="Expected Revenue"  val={<Num val={Math.round(totalExp)} pre="$"/>} col={C.ind} sub="Risk-adjusted total"/>
+        <KpiTile icon="⚡" label="Overbook Slots"    val={<Num val={obCount}/>}                     col={C.amb} sub="EV-positive decisions"/>
+        <KpiTile icon="🔥" label="Opportunity Cost"  val={<Num val={Math.round(oppCost)} pre="$"/>} col={C.red} sub="If no action taken"/>
+        <div className="kpi-tile" style={{ borderTop:`3px solid ${C.tea}` }}>
+          <div style={{ fontSize:22, marginBottom:8 }}>🎛️</div>
+          <div style={{ fontFamily:C.mono, fontSize:24, fontWeight:700, color:C.tea }}>{pen.toFixed(2)}×</div>
+          <div style={{ fontSize:10.5, color:C.tx2, textTransform:"uppercase", letterSpacing:".8px", margin:"5px 0 8px" }}>Penalty Factor</div>
+          <input type="range" min={1.0} max={3.0} step={0.05} value={pen} onChange={e=>setPen(parseFloat(e.target.value))} style={{ accentColor:C.tea }}/>
+          <div style={{ fontSize:10, color:C.tx3, marginTop:4 }}>Drag to adjust overbooking aggression</div>
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:16}}>
-        <Card title="Optimized Slot Decisions" sub="LP expected value per slot · penalty-adjusted overbooking" accent={T.p} flat>
-          <div style={{overflowX:"auto"}}>
+      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:16 }}>
+        <Card title="Optimized Slot Decisions" sub="Linear programming · maximize E[Revenue] per slot" accent={C.ind} flat>
+          <div style={{ overflowX:"auto" }}>
             <table>
-              <thead><tr>
-                <th>Patient</th><th>Time</th><th>Service</th><th>Risk</th>
-                <th>E[Revenue]</th><th>Opp. Cost</th><th>Decision</th>
-              </tr></thead>
+              <thead><tr><th>Patient</th><th>Time</th><th>Service</th><th>Risk</th><th>E[Revenue]</th><th>Opp. Cost</th><th>Decision</th></tr></thead>
               <tbody>
                 {reOpt.slice().sort((a,b)=>b.noshow_prob-a.noshow_prob).map(p=>(
                   <tr key={p.id}>
                     <td>
-                      <div style={{fontWeight:600,color:T.t1,fontSize:13}}>{p.name}</div>
-                      <div style={{fontSize:10.5,color:T.t3,marginTop:1}}>{p.provider}</div>
+                      <div style={{ fontWeight:600, color:C.tx1, fontSize:13 }}>{p.name}</div>
+                      <div style={{ fontSize:10.5, color:C.tx3, marginTop:1 }}>{p.provider}</div>
                     </td>
-                    <td style={{fontFamily:T.mono,color:T.pLL,fontWeight:500}}>{p.time}</td>
-                    <td style={{color:T.t2}}>{p.service}</td>
-                    <td><RB prob={p.noshow_prob}/></td>
-                    <td style={{fontFamily:T.mono,color:T.gL,fontWeight:700}}>${Math.round(p.expectedRevenue).toLocaleString()}</td>
-                    <td style={{fontFamily:T.mono,color:T.rL}}>${Math.round(p.opportunityCost).toLocaleString()}</td>
+                    <td style={{ fontFamily:C.mono, color:C.ind, fontWeight:600 }}>{p.time}</td>
+                    <td style={{ color:C.tx2 }}>{p.service}</td>
+                    <td><RiskBadge prob={p.noshow_prob}/></td>
+                    <td style={{ fontFamily:C.mono, color:C.grn, fontWeight:700 }}>${Math.round(p.expectedRevenue).toLocaleString()}</td>
+                    <td style={{ fontFamily:C.mono, color:C.red }}>${Math.round(p.opportunityCost).toLocaleString()}</td>
                     <td>
-                      {p.shouldOverbook
-                        ?<Chip col={T.a}>⚡ OVERBOOK</Chip>
-                        :p.noshow_prob>.3
-                        ?<Chip col={T.s}>📲 REMIND</Chip>
-                        :<Chip col={T.g}>✅ HOLD</Chip>}
+                      {p.shouldOverbook ? <Chip col={C.amb}>⚡ OVERBOOK</Chip>
+                        : p.noshow_prob>.3 ? <Chip col={C.tea}>📲 REMIND</Chip>
+                        : <Chip col={C.grn}>✅ HOLD</Chip>}
                     </td>
                   </tr>
                 ))}
@@ -809,43 +701,38 @@ function SchedulingTab({optimized,waitlist}){
           </div>
         </Card>
 
-        <div style={{display:"flex",flexDirection:"column",gap:14}}>
-          <Card title="Provider Analytics" accent={T.s}>
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <Card title="Provider Analytics" accent={C.tea}>
             {provData.map(p=>(
-              <div key={p.name} style={{marginBottom:16}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                  <div style={{display:"flex",alignItems:"center",gap:9}}>
-                    <div style={{width:30,height:30,borderRadius:"50%",
-                      background:`linear-gradient(135deg,${T.p}15,${T.s}10)`,
-                      border:`1px solid ${T.b2}`,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:11,fontWeight:700,color:T.pL,fontFamily:T.mono}}>
+              <div key={p.name} style={{ marginBottom:16 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+                    <div style={{ width:30, height:30, borderRadius:"50%", background:`linear-gradient(135deg,${C.ind}22,${C.tea}18)`, border:`1px solid ${C.br2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:C.ind, fontFamily:C.mono }}>
                       {p.name[0]}
                     </div>
                     <div>
-                      <div style={{fontSize:12.5,fontWeight:600,color:T.t1}}>{p.name}</div>
-                      <div style={{fontSize:10,color:T.t3}}>{p.slots} appts · {p.risk}% avg risk</div>
+                      <div style={{ fontSize:12.5, fontWeight:600, color:C.tx1 }}>{p.name}</div>
+                      <div style={{ fontSize:10, color:C.tx3 }}>{p.slots} appts · {p.risk}% avg risk</div>
                     </div>
                   </div>
-                  <span style={{fontFamily:T.mono,fontSize:12,color:T.s,fontWeight:600}}>${p.rev.toLocaleString()}</span>
+                  <span style={{ fontFamily:C.mono, fontSize:12, color:C.tea, fontWeight:700 }}>${p.rev.toLocaleString()}</span>
                 </div>
-                <Bar val={p.rev} max={Math.max(...provData.map(x=>x.rev))} col={T.p} h={4}/>
+                <PBar val={p.rev} max={Math.max(...provData.map(x=>x.rev))} col={C.ind} h={4}/>
               </div>
             ))}
           </Card>
 
-          <Card title="Waitlist Optimizer" sub="Ranked by E[Rev] × urgency" accent={T.g}>
+          <Card title="Waitlist Priority" sub="Ranked: E[Rev] × urgency" accent={C.grn}>
             {waitlist.slice(0,6).map((w,i)=>(
-              <div key={w.id} style={{display:"flex",alignItems:"center",gap:10,
-                padding:"8px 0",borderBottom:`1px solid ${T.b1}`}}>
-                <span style={{fontFamily:T.mono,fontSize:11,color:i<3?T.a:T.t3,minWidth:20,fontWeight:700}}>#{i+1}</span>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:12.5,color:T.t1,fontWeight:600}}>{w.name}</div>
-                  <div style={{fontSize:10,color:T.t3}}>{w.service} · {w.wait_days}d wait</div>
+              <div key={w.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.br1}` }}>
+                <span style={{ fontFamily:C.mono, fontSize:11, color:i<3?C.amb:C.tx3, minWidth:20, fontWeight:700 }}>#{i+1}</span>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:12.5, color:C.tx1, fontWeight:600 }}>{w.name}</div>
+                  <div style={{ fontSize:10, color:C.tx3 }}>{w.service} · {w.wait_days}d wait</div>
                 </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontFamily:T.mono,fontSize:12,color:T.gL,fontWeight:600}}>${Math.round(w.revenue*(1-w.noshow_prob))}</div>
-                  <div style={{fontSize:10,color:T.t3}}>{(w.urgency*100).toFixed(0)}% urgent</div>
+                <div style={{ textAlign:"right" }}>
+                  <div style={{ fontFamily:C.mono, fontSize:12, color:C.grn, fontWeight:700 }}>${Math.round(w.revenue*(1-w.noshow_prob))}</div>
+                  <div style={{ fontSize:10, color:C.tx3 }}>{(w.urgency*100).toFixed(0)}% urgent</div>
                 </div>
               </div>
             ))}
@@ -856,133 +743,124 @@ function SchedulingTab({optimized,waitlist}){
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    SIMULATION TAB
-═════════════════════════════════════════════════════════════════*/
-function SimulationTab(){
-  const[p,setP]=useState({slots:80,baseNS:.20,rev:220,obFrac:.65,remLift:.28,confLift:.38,implCost:85000});
-  const mc=useMemo(()=>monteCarlo(p,900),[p]);
-  const upd=(k,v)=>setP(pr=>({...pr,[k]:v}));
+══════════════════════════════════════════════════════════ */
+function SimulationTab() {
+  const [p, setP] = useState({ slots:80, baseNS:.20, rev:220, obFrac:.65, remLift:.28, confLift:.38, implCost:85000 });
+  const mc  = useMemo(()=>monteCarlo(p,900),[p]);
+  const upd = (k,v) => setP(pr=>({...pr,[k]:v}));
 
-  const hist=useMemo(()=>{
-    const bins=26,mn=mc.dist[0],mx=mc.dist[mc.dist.length-1],bw=(mx-mn)/bins;
+  const hist = useMemo(()=>{
+    const bins=26, mn=mc.dist[0], mx=mc.dist[mc.dist.length-1], bw=(mx-mn)/bins;
     return Array.from({length:bins},(_,i)=>{
-      const lo=mn+i*bw,hi=lo+bw;
-      return{rev:Math.round((lo+hi)/2),n:mc.dist.filter(v=>v>=lo&&v<hi).length};
+      const lo=mn+i*bw, hi=lo+bw;
+      return { rev:Math.round((lo+hi)/2), n:mc.dist.filter(v=>v>=lo&&v<hi).length };
     });
   },[mc]);
 
-  const monthly=useMemo(()=>["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map(m=>{
+  const monthly = useMemo(()=>["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map(m=>{
     const f=.88+Math.random()*.24;
-    return{m,base:Math.round(mc.base*22*f),p10:Math.round(mc.p10*22*f*(.95+Math.random()*.1)),p50:Math.round(mc.p50*22*f*(.95+Math.random()*.1)),p90:Math.round(mc.p90*22*f*(.95+Math.random()*.1))};
+    return { m, base:Math.round(mc.base*22*f), p10:Math.round(mc.p10*22*f*(.95+Math.random()*.1)), p50:Math.round(mc.p50*22*f*(.95+Math.random()*.1)), p90:Math.round(mc.p90*22*f*(.95+Math.random()*.1)) };
   }),[mc]);
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeUp .35s ease"}}>
-      <Card title="Monte Carlo Simulation Parameters" sub="900 stochastic revenue paths · recalculates live on every change" accent={T.a}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:20}}>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:18, animation:"fadeUp .35s ease" }}>
+      <Card title="Monte Carlo Simulation Parameters" sub="900 stochastic paths · recalculates instantly on every change" accent={C.amb}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:20 }}>
           {[
-            {k:"slots",l:"Daily Slots",min:20,max:200,step:5,fmt:v=>v,icon:"📅"},
-            {k:"baseNS",l:"Baseline No-Show",min:.05,max:.45,step:.01,fmt:v=>`${(v*100).toFixed(0)}%`,icon:"⚠️"},
-            {k:"rev",l:"Revenue / Slot",min:50,max:900,step:25,fmt:v=>`$${v}`,icon:"💰"},
-            {k:"obFrac",l:"Overbooking Rate",min:0,max:.95,step:.05,fmt:v=>`${(v*100).toFixed(0)}%`,icon:"⚡"},
-            {k:"remLift",l:"Reminder Lift",min:.05,max:.55,step:.01,fmt:v=>`${(v*100).toFixed(0)}%`,icon:"📲"},
-            {k:"confLift",l:"Confirmation Lift",min:.05,max:.65,step:.01,fmt:v=>`${(v*100).toFixed(0)}%`,icon:"✅"},
-            {k:"implCost",l:"Impl. Cost",min:10000,max:500000,step:5000,fmt:v=>`$${(v/1000).toFixed(0)}K`,icon:"🏗️"},
+            { k:"slots",    l:"Daily Slots",        min:20,    max:200,    step:5,    fmt:v=>v,                            icon:"📅" },
+            { k:"baseNS",   l:"Baseline No-Show",   min:.05,   max:.45,   step:.01,  fmt:v=>`${(v*100).toFixed(0)}%`,     icon:"⚠️" },
+            { k:"rev",      l:"Revenue / Slot",     min:50,    max:900,    step:25,   fmt:v=>`$${v}`,                      icon:"💰" },
+            { k:"obFrac",   l:"Overbooking Rate",   min:0,     max:.95,   step:.05,  fmt:v=>`${(v*100).toFixed(0)}%`,     icon:"⚡" },
+            { k:"remLift",  l:"Reminder Lift",      min:.05,   max:.55,   step:.01,  fmt:v=>`${(v*100).toFixed(0)}%`,     icon:"📲" },
+            { k:"confLift", l:"Confirmation Lift",  min:.05,   max:.65,   step:.01,  fmt:v=>`${(v*100).toFixed(0)}%`,     icon:"✅" },
+            { k:"implCost", l:"Impl. Cost",         min:10000, max:500000, step:5000, fmt:v=>`$${(v/1000).toFixed(0)}K`,  icon:"🏗️" },
           ].map(f=>(
             <div key={f.k}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <label style={{fontSize:11.5,color:T.t2,display:"flex",alignItems:"center",gap:5}}>
-                  <span>{f.icon}</span>{f.l}
-                </label>
-                <span style={{fontSize:11,fontFamily:T.mono,color:T.aL,fontWeight:700}}>{f.fmt(p[f.k])}</span>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                <label style={{ fontSize:11.5, color:C.tx2, display:"flex", alignItems:"center", gap:5 }}><span>{f.icon}</span>{f.l}</label>
+                <span style={{ fontSize:11, fontFamily:C.mono, color:C.amb, fontWeight:700 }}>{f.fmt(p[f.k])}</span>
               </div>
-              <input type="range" min={f.min} max={f.max} step={f.step} value={p[f.k]}
-                onChange={e=>upd(f.k,parseFloat(e.target.value))} style={{accentColor:T.a}}/>
+              <input type="range" min={f.min} max={f.max} step={f.step} value={p[f.k]} onChange={e=>upd(f.k,parseFloat(e.target.value))} style={{ accentColor:C.amb }}/>
             </div>
           ))}
         </div>
       </Card>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-        <KPI icon="🎯" label="P50 Daily Revenue" val={<Num val={Math.round(mc.p50)} pre="$"/>} col={T.p} sub={`vs $${Math.round(mc.base).toLocaleString()} baseline`}/>
-        <KPI icon="📊" label="P10–P90 Range" val={<Num val={Math.round(mc.p90-mc.p10)} pre="$"/>} col={T.s} sub="Daily confidence spread"/>
-        <KPI icon="📈" label="Annual Uplift" val={<Num val={Math.round(mc.annualLift/1000)} pre="$" suf="K"/>} col={T.a} delta={Math.round((mc.p50/mc.base-1)*100)}/>
-        <KPI icon="⏱" label="Break-Even" val={<Num val={mc.breakEven} suf="d"/>} col={mc.breakEven<90?T.g:T.r} sub={`At $${(p.implCost/1000).toFixed(0)}K cost`}/>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+        <KpiTile icon="🎯" label="P50 Daily Revenue"  val={<Num val={Math.round(mc.p50)} pre="$"/>}                      col={C.ind} sub={`vs $${Math.round(mc.base).toLocaleString()} baseline`}/>
+        <KpiTile icon="📊" label="P10–P90 Range"      val={<Num val={Math.round(mc.p90-mc.p10)} pre="$"/>}               col={C.tea} sub="Daily confidence spread"/>
+        <KpiTile icon="📈" label="Annual Uplift"       val={<Num val={Math.round(mc.annualLift/1000)} pre="$" suf="K"/>}  col={C.amb} delta={Math.round((mc.p50/mc.base-1)*100)}/>
+        <KpiTile icon="⏱" label="Break-Even"          val={<Num val={mc.breakEven} suf="d"/>}                            col={mc.breakEven<90?C.grn:C.red} sub={`At $${(p.implCost/1000).toFixed(0)}K cost`}/>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1.6fr 1fr",gap:16}}>
-        <Card title="Revenue Distribution — 900 Paths" sub="Red = below baseline · Amber = below P50 · Blue = above P50" accent={T.p}>
+      <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:16 }}>
+        <Card title="Revenue Distribution — 900 Monte Carlo Paths" sub="Red = below baseline · Amber = below P50 · Indigo = above P50" accent={C.ind}>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={hist} barCategoryGap="5%">
-              {grid}
+              <GridLines/>
               <XAxis dataKey="rev" tick={axTick} tickFormatter={v=>`$${(v/1000).toFixed(0)}K`}/>
               <YAxis hide/>
-              <Tooltip contentStyle={TIP} formatter={(v,n,pp)=>[`${v} paths`,`~$${pp.payload.rev.toLocaleString()}`]}/>
+              <Tooltip contentStyle={TIP_STYLE} formatter={(v,n,pp)=>[`${v} paths`,`~$${pp.payload.rev.toLocaleString()}`]}/>
               <Bar dataKey="n" radius={[3,3,0,0]}>
-                {hist.map((d,i)=><Cell key={i} fill={d.rev<mc.base?T.r:d.rev<mc.p50?T.a:T.p} opacity={.85}/>)}
+                {hist.map((d,i)=><Cell key={i} fill={d.rev<mc.base?C.red:d.rev<mc.p50?C.amb:C.ind} opacity={.85}/>)}
               </Bar>
-              <ReferenceLine x={Math.round(mc.base)} stroke={T.r}  strokeDasharray="4 2" strokeWidth={1.5}/>
-              <ReferenceLine x={Math.round(mc.p50)} stroke={T.pL} strokeDasharray="4 2" strokeWidth={1.5}/>
+              <ReferenceLine x={Math.round(mc.base)} stroke={C.red} strokeDasharray="4 2" strokeWidth={1.5}/>
+              <ReferenceLine x={Math.round(mc.p50)}  stroke={C.ind} strokeDasharray="4 2" strokeWidth={1.5}/>
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Scenario Comparison" accent={T.s}>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <Card title="Scenario Comparison" accent={C.tea}>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             {[
-              {l:"Baseline (No ARIL)",v:mc.base,c:T.t3,i:"📉"},
-              {l:"Pessimistic P10",   v:mc.p10, c:T.a, i:"⚠️"},
-              {l:"Expected P50",      v:mc.p50, c:T.p, i:"🎯"},
-              {l:"Optimistic P90",    v:mc.p90, c:T.g, i:"🚀"},
+              { l:"Baseline (No ARIL)", v:mc.base, col:C.tx3, i:"📉" },
+              { l:"Pessimistic P10",    v:mc.p10,  col:C.amb,  i:"⚠️" },
+              { l:"Expected P50",       v:mc.p50,  col:C.ind,  i:"🎯" },
+              { l:"Optimistic P90",     v:mc.p90,  col:C.grn,  i:"🚀" },
             ].map(s=>(
-              <div key={s.l} style={{padding:"11px 14px",background:T.bg4,borderRadius:10,
-                border:`1px solid ${T.b1}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:18}}>{s.i}</span>
+              <div key={s.l} style={{ padding:"11px 14px", background:C.surface, borderRadius:10, border:`1px solid ${C.br1}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontSize:18 }}>{s.i}</span>
                   <div>
-                    <div style={{fontSize:12.5,color:T.t1,fontWeight:600}}>{s.l}</div>
-                    <div style={{fontFamily:T.mono,fontSize:14,color:s.c,fontWeight:700}}>${Math.round(s.v).toLocaleString()}/day</div>
+                    <div style={{ fontSize:12.5, color:C.tx1, fontWeight:600 }}>{s.l}</div>
+                    <div style={{ fontFamily:C.mono, fontSize:14, color:s.col, fontWeight:700 }}>${Math.round(s.v).toLocaleString()}/day</div>
                   </div>
                 </div>
-                <span style={{fontSize:12,color:s.v>mc.base?T.gL:T.t3,fontFamily:T.mono,fontWeight:600}}>
+                <span style={{ fontSize:12, color:s.v>mc.base?C.grn:C.tx3, fontFamily:C.mono, fontWeight:700 }}>
                   {s.v>mc.base?`+${((s.v/mc.base-1)*100).toFixed(1)}%`:"—"}
                 </span>
               </div>
             ))}
           </div>
-          <div style={{marginTop:12,padding:"12px 14px",
-            background:`linear-gradient(135deg,${T.a}0A,${T.p}0A)`,
-            borderRadius:10,border:`1px solid ${T.a}30`}}>
-            <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:"1.8px",marginBottom:5,fontFamily:T.mono}}>Annual Uplift Range</div>
-            <div style={{fontFamily:T.mono,fontSize:18,fontWeight:700,
-              background:`linear-gradient(90deg,${T.a},${T.p})`,
-              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+          <div style={{ marginTop:12, padding:"12px 14px", background:`linear-gradient(135deg,${C.amb}0A,${C.ind}0A)`, borderRadius:10, border:`1px solid ${C.amb}33` }}>
+            <div style={{ fontSize:9, color:C.tx3, textTransform:"uppercase", letterSpacing:"1.8px", marginBottom:5, fontFamily:C.mono }}>Annual Uplift Range (P10–P90)</div>
+            <div style={{ fontFamily:C.mono, fontSize:18, fontWeight:700, background:`linear-gradient(90deg,${C.amb},${C.ind})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
               ${((mc.p10-mc.base)*260/1000).toFixed(0)}K – ${((mc.p90-mc.base)*260/1000).toFixed(0)}K
             </div>
           </div>
         </Card>
       </div>
 
-      <Card title="12-Month Revenue Projection with Confidence Bands" sub="P10 / P50 / P90 vs. no-action baseline · monthly view" accent={T.p}>
+      <Card title="12-Month Revenue Forecast" sub="P10 / P50 / P90 projected revenue vs. no-action baseline" accent={C.ind}>
         <ResponsiveContainer width="100%" height={245}>
           <AreaChart data={monthly}>
             <defs>
               <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={T.p} stopOpacity={.14}/>
-                <stop offset="95%" stopColor={T.p} stopOpacity={.01}/>
+                <stop offset="5%" stopColor={C.ind} stopOpacity={.12}/><stop offset="95%" stopColor={C.ind} stopOpacity={.01}/>
               </linearGradient>
             </defs>
-            {grid}
+            <GridLines/>
             <XAxis dataKey="m" tick={axTick}/>
             <YAxis tickFormatter={v=>`$${(v/1000).toFixed(0)}K`} tick={axTick}/>
-            <Tooltip contentStyle={TIP} formatter={v=>`$${v.toLocaleString()}`}/>
+            <Tooltip contentStyle={TIP_STYLE} formatter={v=>`$${v.toLocaleString()}`}/>
             <Area type="monotone" dataKey="p90" stroke="none" fill="url(#aG)"/>
-            <Line type="monotone" dataKey="base" stroke={T.b2} strokeWidth={1.5} dot={false} name="Baseline" strokeDasharray="5 4"/>
-            <Line type="monotone" dataKey="p10"  stroke={T.a}  strokeWidth={1.5} dot={false} name="P10" strokeOpacity={.8}/>
-            <Line type="monotone" dataKey="p50"  stroke={T.p}  strokeWidth={2.5} dot={false} name="P50 Expected" style={{filter:`drop-shadow(0 0 6px ${T.p}80)`}}/>
-            <Line type="monotone" dataKey="p90"  stroke={T.g}  strokeWidth={1.5} dot={false} name="P90" strokeOpacity={.8}/>
-            <Legend wrapperStyle={{fontSize:11}} formatter={v=><span style={{color:T.t2}}>{v}</span>}/>
+            <Line type="monotone" dataKey="base" stroke={C.br2}  strokeWidth={1.5} dot={false} name="Baseline" strokeDasharray="5 4"/>
+            <Line type="monotone" dataKey="p10"  stroke={C.amb}  strokeWidth={1.5} dot={false} name="P10" strokeOpacity={.8}/>
+            <Line type="monotone" dataKey="p50"  stroke={C.ind}  strokeWidth={2.5} dot={false} name="P50 Expected"/>
+            <Line type="monotone" dataKey="p90"  stroke={C.grn}  strokeWidth={1.5} dot={false} name="P90" strokeOpacity={.8}/>
+            <Legend wrapperStyle={{ fontSize:11 }} formatter={v=><span style={{ color:C.tx2 }}>{v}</span>}/>
           </AreaChart>
         </ResponsiveContainer>
       </Card>
@@ -990,127 +868,121 @@ function SimulationTab(){
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    ANALYTICS TAB
-═════════════════════════════════════════════════════════════════*/
-function AnalyticsTab({patients}){
-  const dayData=["Mon","Tue","Wed","Thu","Fri"].map((d,i)=>{
+══════════════════════════════════════════════════════════ */
+function AnalyticsTab({ patients }) {
+  const dayData  = ["Mon","Tue","Wed","Thu","Fri"].map((d,i)=>{
     const pts=patients.filter(p=>p.day_of_week===i+1);
-    return{day:d,risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0};
+    return { day:d, risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0 };
   });
-  const leadData=[
-    {b:"1–7d",  f:p=>p.lead_time_days<=7},
-    {b:"8–14d", f:p=>p.lead_time_days>7&&p.lead_time_days<=14},
-    {b:"15–30d",f:p=>p.lead_time_days>14&&p.lead_time_days<=30},
-    {b:"31d+",  f:p=>p.lead_time_days>30},
-  ].map(({b,f})=>{const pts=patients.filter(f);return{bucket:b,risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0};});
-  const cohorts=[
-    {name:"Critical ≥60%",v:patients.filter(p=>p.noshow_prob>=.6).length,c:T.r},
-    {name:"High 40–60%",  v:patients.filter(p=>p.noshow_prob>=.4&&p.noshow_prob<.6).length,c:T.a},
-    {name:"Moderate",     v:patients.filter(p=>p.noshow_prob>=.2&&p.noshow_prob<.4).length,c:T.s},
-    {name:"Low <20%",     v:patients.filter(p=>p.noshow_prob<.2).length,c:T.g},
+  const leadData = [{b:"1–7d",f:p=>p.lead_time_days<=7},{b:"8–14d",f:p=>p.lead_time_days>7&&p.lead_time_days<=14},{b:"15–30d",f:p=>p.lead_time_days>14&&p.lead_time_days<=30},{b:"31d+",f:p=>p.lead_time_days>30}]
+    .map(({b,f})=>{ const pts=patients.filter(f); return { bucket:b, risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0 }; });
+  const cohorts  = [
+    { name:"Critical ≥60%", v:patients.filter(p=>p.noshow_prob>=.6).length,  col:C.red },
+    { name:"High 40–60%",   v:patients.filter(p=>p.noshow_prob>=.4&&p.noshow_prob<.6).length, col:C.amb },
+    { name:"Moderate",      v:patients.filter(p=>p.noshow_prob>=.2&&p.noshow_prob<.4).length, col:C.tea },
+    { name:"Low <20%",      v:patients.filter(p=>p.noshow_prob<.2).length,   col:C.grn },
   ];
-  const scatter=patients.map(p=>({x:p.lead_time_days,y:+(p.noshow_prob*100).toFixed(1),prob:p.noshow_prob}));
-  const roi=[
-    {name:"SMS Reminder",   red:18,cost:2,  roi:420,  c:T.s},
-    {name:"Call + SMS",     red:31,cost:8,  roi:890,  c:T.p},
-    {name:"AI Overbooking", red:45,cost:12, roi:1240, c:T.a},
-    {name:"Full ARIL Suite",red:62,cost:18, roi:2100, c:T.g},
+  const scatter  = patients.map(p=>({ x:p.lead_time_days, y:+(p.noshow_prob*100).toFixed(1), prob:p.noshow_prob }));
+  const roi      = [
+    { name:"SMS Reminder Only",  red:18, cost:2,  roi:420,  col:C.tea },
+    { name:"Call + SMS Combo",   red:31, cost:8,  roi:890,  col:C.ind },
+    { name:"AI Overbooking",     red:45, cost:12, roi:1240, col:C.amb },
+    { name:"Full ARIL Suite",    red:62, cost:18, roi:2100, col:C.grn },
   ];
-  const svcData=SVCS.map(svc=>{
+  const svcData  = SVCS.map(svc=>{
     const pts=patients.filter(p=>p.service===svc.n);
-    return{name:svc.n,risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0,n:pts.length};
+    return { name:svc.n, risk:pts.length?(pts.reduce((s,p)=>s+p.noshow_prob,0)/pts.length*100).toFixed(1):0, n:pts.length };
   }).filter(s=>s.n>0);
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeUp .35s ease"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
-        <Card title="Population Risk Cohorts" accent={T.p}>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:18, animation:"fadeUp .35s ease" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
+        <Card title="Population Risk Cohorts" accent={C.ind}>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={cohorts.map(c=>({name:c.name,value:c.v}))} cx="50%" cy="50%"
-                innerRadius={54} outerRadius={80} paddingAngle={4} dataKey="value" strokeWidth={0}>
-                {cohorts.map((c,i)=><Cell key={i} fill={c.c}/>)}
+              <Pie data={cohorts.map(c=>({name:c.name,value:c.v}))} cx="50%" cy="50%" innerRadius={54} outerRadius={80} paddingAngle={4} dataKey="value" strokeWidth={0}>
+                {cohorts.map((c,i)=><Cell key={i} fill={c.col}/>)}
               </Pie>
-              <Tooltip contentStyle={TIP}/>
-              <Legend wrapperStyle={{fontSize:10.5}} formatter={v=><span style={{color:T.t2}}>{v}</span>}/>
+              <Tooltip contentStyle={TIP_STYLE}/>
+              <Legend wrapperStyle={{ fontSize:10.5 }} formatter={v=><span style={{ color:C.tx2 }}>{v}</span>}/>
             </PieChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Risk by Day of Week" accent={T.a}>
+        <Card title="Risk by Day of Week" accent={C.amb}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={dayData} barCategoryGap="35%">
-              {grid}
+              <GridLines/>
               <XAxis dataKey="day" tick={axTick} axisLine={false} tickLine={false}/>
               <YAxis tick={axTick} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`}/>
-              <Tooltip contentStyle={TIP} formatter={v=>`${v}%`}/>
+              <Tooltip contentStyle={TIP_STYLE} formatter={v=>`${v}%`}/>
               <Bar dataKey="risk" name="Avg Risk" radius={[4,4,0,0]}>
-                {dayData.map((d,i)=><Cell key={i} fill={parseFloat(d.risk)>30?T.r:parseFloat(d.risk)>22?T.a:T.p}/>)}
+                {dayData.map((d,i)=><Cell key={i} fill={parseFloat(d.risk)>30?C.red:parseFloat(d.risk)>22?C.amb:C.ind}/>)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Risk by Lead Time" accent={T.s}>
+        <Card title="Risk by Lead Time" accent={C.tea}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={leadData} barCategoryGap="35%">
-              {grid}
+              <GridLines/>
               <XAxis dataKey="bucket" tick={axTick} axisLine={false} tickLine={false}/>
               <YAxis tick={axTick} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`}/>
-              <Tooltip contentStyle={TIP} formatter={v=>`${v}%`}/>
+              <Tooltip contentStyle={TIP_STYLE} formatter={v=>`${v}%`}/>
               <Bar dataKey="risk" name="Avg Risk" radius={[4,4,0,0]}>
-                {leadData.map((d,i)=><Cell key={i} fill={[T.g,T.s,T.a,T.r][i]}/>)}
+                {leadData.map((d,i)=><Cell key={i} fill={[C.grn,C.tea,C.amb,C.red][i]}/>)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Card>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:16}}>
-        <Card title="Lead Time vs. No-Show Risk" sub="Each point = one patient · color = risk tier" accent={T.p}>
+      <div style={{ display:"grid", gridTemplateColumns:"1.4fr 1fr", gap:16 }}>
+        <Card title="Lead Time vs. No-Show Risk" sub="Each point = one patient · color = risk tier" accent={C.ind}>
           <ResponsiveContainer width="100%" height={240}>
             <ScatterChart>
-              <CartesianGrid strokeDasharray="2 8" stroke={T.b1}/>
-              <XAxis dataKey="x" name="Lead Time" tick={axTick}
-                label={{value:"Lead Time (days)",position:"insideBottom",offset:-8,fontSize:10.5,fill:T.t3}}/>
+              <CartesianGrid strokeDasharray="2 8" stroke="#E8EDF8"/>
+              <XAxis dataKey="x" name="Lead Time" tick={axTick} label={{ value:"Lead Time (days)", position:"insideBottom", offset:-8, fontSize:10.5, fill:C.tx3 }}/>
               <YAxis dataKey="y" name="No-Show Risk" tick={axTick} tickFormatter={v=>`${v}%`}/>
-              <Tooltip contentStyle={TIP} formatter={(v,n)=>n==="No-Show Risk"?`${v}%`:v}/>
+              <Tooltip contentStyle={TIP_STYLE} formatter={(v,n)=>n==="No-Show Risk"?`${v}%`:v}/>
               <Scatter data={scatter} name="Patients">
-                {scatter.map((d,i)=><Cell key={i} fill={d.prob<.2?T.g:d.prob<.4?T.s:d.prob<.6?T.a:T.r} fillOpacity={.8}/>)}
+                {scatter.map((d,i)=><Cell key={i} fill={d.prob<.2?C.grn:d.prob<.4?C.tea:d.prob<.6?C.amb:C.red} fillOpacity={.8}/>)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Intervention ROI" sub="Revenue recovery per $1 invested" accent={T.g}>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <Card title="Intervention ROI Analysis" sub="Revenue recovery per $1 invested" accent={C.grn}>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             {roi.map(d=>(
-              <div key={d.name} style={{padding:"12px 14px",background:T.bg4,borderRadius:10,border:`1px solid ${T.b1}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <span style={{fontSize:12.5,color:T.t1,fontWeight:600}}>{d.name}</span>
-                  <Chip col={T.a}>{d.roi}% ROI</Chip>
+              <div key={d.name} style={{ padding:"12px 14px", background:C.surface, borderRadius:10, border:`1px solid ${C.br1}` }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                  <span style={{ fontSize:12.5, color:C.tx1, fontWeight:600 }}>{d.name}</span>
+                  <Chip col={C.amb}>{d.roi}% ROI</Chip>
                 </div>
-                <div style={{display:"flex",gap:16,marginBottom:7}}>
-                  <span style={{fontSize:10.5,color:T.gL}}>▲ {d.red}% reduction</span>
-                  <span style={{fontSize:10.5,color:T.t3}}>${d.cost}/patient</span>
+                <div style={{ display:"flex", gap:16, marginBottom:7 }}>
+                  <span style={{ fontSize:10.5, color:C.grn }}>▲ {d.red}% reduction</span>
+                  <span style={{ fontSize:10.5, color:C.tx3 }}>${d.cost}/patient</span>
                 </div>
-                <Bar val={d.roi} max={2200} col={d.c} h={4}/>
+                <PBar val={d.roi} max={2200} col={d.col} h={4}/>
               </div>
             ))}
           </div>
         </Card>
       </div>
 
-      <Card title="No-Show Risk by Service Line" sub="High revenue × high risk = priority intervention target" accent={T.a}>
+      <Card title="No-Show Risk by Service Line" sub="High revenue × high risk = priority intervention target" accent={C.amb}>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={svcData} layout="vertical" barCategoryGap="28%">
-            {grid}
+            <GridLines/>
             <XAxis type="number" tickFormatter={v=>`${v}%`} tick={axTick} axisLine={false} tickLine={false}/>
-            <YAxis type="category" dataKey="name" tick={{fontSize:11.5,fill:T.t2,fontFamily:T.sans}} axisLine={false} tickLine={false} width={95}/>
-            <Tooltip contentStyle={TIP} formatter={v=>`${v}%`}/>
+            <YAxis type="category" dataKey="name" tick={{ fontSize:11.5, fill:C.tx2, fontFamily:C.sans }} axisLine={false} tickLine={false} width={95}/>
+            <Tooltip contentStyle={TIP_STYLE} formatter={v=>`${v}%`}/>
             <Bar dataKey="risk" name="Avg Risk %" radius={[0,4,4,0]}>
-              {svcData.map((d,i)=><Cell key={i} fill={parseFloat(d.risk)>25?T.r:parseFloat(d.risk)>18?T.a:T.p}/>)}
+              {svcData.map((d,i)=><Cell key={i} fill={parseFloat(d.risk)>25?C.red:parseFloat(d.risk)>18?C.amb:C.ind}/>)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -1119,131 +991,97 @@ function AnalyticsTab({patients}){
   );
 }
 
-/* ═════════════════════════════════════════════════════════════════
-   ROOT APPLICATION
-═════════════════════════════════════════════════════════════════*/
-export default function ARIL(){
-  const[tab,setTab]=useState("overview");
-  const[patients]=useState(()=>makePatients(24));
-  const[waitlist]=useState(()=>makeWaitlist(10));
-  const[clock,setClock]=useState(new Date());
+/* ══════════════════════════════════════════════════════════
+   ROOT APP
+══════════════════════════════════════════════════════════ */
+export default function ARIL() {
+  const [tab,      setTab]  = useState("overview");
+  const [patients]          = useState(()=>makePatients(24));
+  const [waitlist]          = useState(()=>makeWaitlist(10));
+  const [clock,    setClock]= useState(new Date());
 
-  useEffect(()=>{const t=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(t);},[]);
+  useEffect(()=>{ const t=setInterval(()=>setClock(new Date()),1000); return ()=>clearInterval(t); },[]);
 
-  const optimized=useMemo(()=>patients.map(p=>optSlot(p,1.75)),[patients]);
-  const mc=useMemo(()=>monteCarlo({slots:80,baseNS:.20,rev:220,obFrac:.65,remLift:.28,confLift:.38,implCost:85000},600),[]);
+  const optimized = useMemo(()=>patients.map(p=>optSlot(p,1.75)),[patients]);
+  const mc        = useMemo(()=>monteCarlo({slots:80,baseNS:.20,rev:220,obFrac:.65,remLift:.28,confLift:.38,implCost:85000},600),[]);
 
-  const avgRisk=patients.reduce((s,p)=>s+p.noshow_prob,0)/patients.length;
-  const critical=patients.filter(p=>p.noshow_prob>=.5).length;
-  const atRisk=patients.reduce((s,p)=>s+p.revenue*p.noshow_prob,0);
-  const expRev=optimized.reduce((s,p)=>s+p.expectedRevenue,0);
+  const avgRisk = patients.reduce((s,p)=>s+p.noshow_prob,0)/patients.length;
+  const critical= patients.filter(p=>p.noshow_prob>=.5).length;
+  const atRisk  = patients.reduce((s,p)=>s+p.revenue*p.noshow_prob,0);
+  const expRev  = optimized.reduce((s,p)=>s+p.expectedRevenue,0);
 
-  const TABS=[
-    {id:"overview",  label:"Intelligence Overview", icon:"◈"},
-    {id:"prediction",label:"Prediction Engine",     icon:"⬡"},
-    {id:"scheduling",label:"Schedule Optimizer",    icon:"⬢"},
-    {id:"simulation",label:"Revenue Simulation",    icon:"◉"},
-    {id:"analytics", label:"Analytics",             icon:"⬟"},
+  const TABS = [
+    { id:"overview",   label:"Intelligence Overview", icon:"◈" },
+    { id:"prediction", label:"Prediction Engine",     icon:"⬡" },
+    { id:"scheduling", label:"Schedule Optimizer",    icon:"⬢" },
+    { id:"simulation", label:"Revenue Simulation",    icon:"◉" },
+    { id:"analytics",  label:"Analytics",             icon:"⬟" },
   ];
 
-  return(
+  return (
     <>
-      <style>{G}</style>
-      <div style={{width:"100%",minHeight:"100vh",background:T.bg0,color:T.t1,
-        fontFamily:T.sans,display:"flex",flexDirection:"column",position:"relative"}}>
+      <style>{STYLE}</style>
+      <div style={{ width:"100%", minHeight:"100vh", background:C.page, color:C.tx1, fontFamily:C.sans, display:"flex", flexDirection:"column", position:"relative" }}>
 
-        {/* ── Ambient gradient background ── */}
-        <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,
-          backgroundImage:`
-            radial-gradient(ellipse 60% 40% at 15% 10%, rgba(91,106,240,.05) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 85% 85%, rgba(6,168,184,.03) 0%, transparent 60%)
-          `}}/>
+        {/* Subtle ambient tint */}
+        <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, backgroundImage:`radial-gradient(ellipse 55% 40% at 10% 10%, rgba(79,91,213,.05) 0%, transparent 55%), radial-gradient(ellipse 45% 35% at 90% 90%, rgba(8,145,178,.04) 0%, transparent 55%)` }}/>
 
-        {/* ── Subtle grid ── */}
-        <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,opacity:.4,
-          backgroundImage:`radial-gradient(circle,#C8D1E8 1px,transparent 1px)`,
-          backgroundSize:"28px 28px"}}/>
-
-        {/* ══════════ HEADER ══════════ */}
-        <header style={{position:"sticky",top:0,zIndex:100,
-          background:"rgba(255,255,255,.95)",backdropFilter:"blur(18px)",
-          borderBottom:`1px solid ${T.b1}`,width:"100%",flexShrink:0,boxShadow:"0 1px 12px rgba(30,50,100,.07)"}}>
-
-          <div style={{maxWidth:1640,margin:"0 auto",padding:"0 28px"}}>
+        {/* ── HEADER ── */}
+        <header style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,.96)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${C.br1}`, boxShadow:"0 1px 16px rgba(30,50,120,.07)", width:"100%", flexShrink:0 }}>
+          <div style={{ maxWidth:1640, margin:"0 auto", padding:"0 28px" }}>
 
             {/* Top bar */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:60}}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", height:62 }}>
 
-              {/* Brand mark */}
-              <div style={{display:"flex",alignItems:"center",gap:14}}>
-                {/* Hexagon logo */}
-                <div style={{position:"relative",width:38,height:38,flexShrink:0}}>
-                  <svg viewBox="0 0 38 38" width="38" height="38">
-                    <defs>
-                      <linearGradient id="lgHex" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor={T.p}/>
-                        <stop offset="100%" stopColor={T.s}/>
-                      </linearGradient>
-                    </defs>
-                    <polygon points="19,2 36,10.5 36,27.5 19,36 2,27.5 2,10.5" fill="url(#lgHex)" opacity=".15"/>
-                    <polygon points="19,2 36,10.5 36,27.5 19,36 2,27.5 2,10.5" fill="none" stroke="url(#lgHex)" strokeWidth="1.5"/>
-                    <text x="19" y="24" textAnchor="middle" fontSize="16" fill={T.pL} fontWeight="700">⚡</text>
-                  </svg>
-                </div>
-
+              {/* Brand */}
+              <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                <svg viewBox="0 0 40 40" width="40" height="40">
+                  <defs>
+                    <linearGradient id="hx" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor={C.ind}/><stop offset="100%" stopColor={C.tea}/>
+                    </linearGradient>
+                  </defs>
+                  <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="url(#hx)" opacity=".12"/>
+                  <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="none" stroke="url(#hx)" strokeWidth="1.8"/>
+                  <text x="20" y="25" textAnchor="middle" fontSize="17" fill={C.ind} fontWeight="700">⚡</text>
+                </svg>
                 <div>
-                  <div style={{fontFamily:T.mono,fontSize:19,fontWeight:700,letterSpacing:"3px",lineHeight:1,
-                    background:`linear-gradient(120deg,${T.p},${T.s})`,
-                    WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-                    ARIL
-                  </div>
-                  <div style={{fontSize:9.5,color:T.t3,letterSpacing:"1.8px",textTransform:"uppercase",marginTop:1}}>
-                    AI Revenue Intelligence Layer
-                  </div>
+                  <div style={{ fontFamily:C.mono, fontSize:19, fontWeight:700, letterSpacing:"3px", lineHeight:1, background:`linear-gradient(120deg,${C.ind},${C.tea})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>ARIL</div>
+                  <div style={{ fontSize:9.5, color:C.tx3, letterSpacing:"1.8px", textTransform:"uppercase", marginTop:1 }}>AI Revenue Intelligence Layer</div>
                 </div>
-
-                <div style={{width:1,height:32,background:T.b1,margin:"0 12px"}}/>
-
-                {/* Live indicator */}
-                <div style={{display:"flex",alignItems:"center",gap:7}}>
-                  <div style={{width:7,height:7,borderRadius:"50%",background:T.g,
-                    boxShadow:`0 0 10px ${T.g}`,animation:"blink 2.2s ease infinite"}}/>
-                  <span style={{fontSize:11,color:T.t3}}>Live</span>
-                  <span style={{color:T.b2,margin:"0 2px"}}>·</span>
-                  <span style={{fontFamily:T.mono,fontSize:11,color:T.t2}}>
-                    {clock.toLocaleTimeString()}
-                  </span>
-                  <span style={{color:T.b2,margin:"0 2px"}}>·</span>
-                  <span style={{fontSize:11,color:T.t3}}>Ensemble v2.4</span>
+                <div style={{ width:1, height:32, background:C.br1, margin:"0 12px" }}/>
+                <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:C.grn, animation:"pulse 2.2s ease infinite" }}/>
+                  <span style={{ fontSize:11, color:C.tx3 }}>Live</span>
+                  <span style={{ color:C.br2, margin:"0 2px" }}>·</span>
+                  <span style={{ fontFamily:C.mono, fontSize:11, color:C.tx2 }}>{clock.toLocaleTimeString()}</span>
+                  <span style={{ color:C.br2, margin:"0 2px" }}>·</span>
+                  <span style={{ fontSize:11, color:C.tx3 }}>Ensemble v2.4</span>
                 </div>
               </div>
 
-              {/* Live metrics bar */}
-              <div style={{display:"flex",gap:28,alignItems:"center"}}>
+              {/* Live stats */}
+              <div style={{ display:"flex", gap:28, alignItems:"center" }}>
                 {[
-                  {l:"Appointments",   v:patients.length,                         c:T.pL},
-                  {l:"Avg Risk",       v:`${(avgRisk*100).toFixed(1)}%`,           c:avgRisk>.28?T.aL:T.sL},
-                  {l:"Critical",       v:critical,                                 c:critical>3?T.rL:T.aL},
-                  {l:"Revenue at Risk",v:`$${Math.round(atRisk).toLocaleString()}`,c:T.aL},
-                  {l:"Expected Rev",   v:`$${Math.round(expRev).toLocaleString()}`,c:T.pL},
+                  { l:"Appointments",    v:patients.length,                          col:C.ind },
+                  { l:"Avg Risk",        v:`${(avgRisk*100).toFixed(1)}%`,            col:avgRisk>.28?C.amb:C.tea },
+                  { l:"Critical",        v:critical,                                  col:critical>3?C.red:C.amb },
+                  { l:"Revenue at Risk", v:`$${Math.round(atRisk).toLocaleString()}`,  col:C.amb },
+                  { l:"Expected Rev",    v:`$${Math.round(expRev).toLocaleString()}`,  col:C.ind },
                 ].map(m=>(
-                  <div key={m.l} style={{textAlign:"center"}}>
-                    <div style={{fontFamily:T.mono,fontSize:14,fontWeight:700,color:m.c,lineHeight:1,letterSpacing:"-.3px"}}>{m.v}</div>
-                    <div style={{fontSize:9,color:T.t3,textTransform:"uppercase",letterSpacing:".9px",marginTop:3}}>{m.l}</div>
+                  <div key={m.l} style={{ textAlign:"center" }}>
+                    <div style={{ fontFamily:C.mono, fontSize:14, fontWeight:700, color:m.col, lineHeight:1, letterSpacing:"-.3px" }}>{m.v}</div>
+                    <div style={{ fontSize:9, color:C.tx3, textTransform:"uppercase", letterSpacing:".9px", marginTop:3 }}>{m.l}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Tab row */}
-            <div style={{display:"flex",borderTop:`1px solid ${T.b1}`}}>
+            {/* Tabs */}
+            <div style={{ display:"flex", borderTop:`1px solid ${C.br1}` }}>
               {TABS.map(t=>(
-                <button key={t.id} onClick={()=>setTab(t.id)}
-                  className={`tab${tab===t.id?" on":""}`}>
-                  <span style={{fontFamily:T.mono,fontSize:14,
-                    color:tab===t.id?T.p:T.t3,transition:"color .15s"}}>
-                    {t.icon}
-                  </span>
+                <button key={t.id} onClick={()=>setTab(t.id)} className={`tab-btn${tab===t.id?" active":""}`}>
+                  <span style={{ fontFamily:C.mono, fontSize:14, color:tab===t.id?C.ind:C.tx3, transition:"color .15s" }}>{t.icon}</span>
                   {t.label}
                 </button>
               ))}
@@ -1251,14 +1089,14 @@ export default function ARIL(){
           </div>
         </header>
 
-        {/* ══════════ CONTENT ══════════ */}
-        <main style={{flex:1,width:"100%",overflowY:"auto",overflowX:"hidden",position:"relative",zIndex:1}}>
-          <div style={{maxWidth:1640,margin:"0 auto",padding:"24px 28px 64px"}}>
-            {tab==="overview"   &&<OverviewTab    patients={patients} optimized={optimized} mc={mc}/>}
-            {tab==="prediction" &&<PredictionTab  patients={patients}/>}
-            {tab==="scheduling" &&<SchedulingTab  optimized={optimized} waitlist={waitlist}/>}
-            {tab==="simulation" &&<SimulationTab/>}
-            {tab==="analytics"  &&<AnalyticsTab   patients={patients}/>}
+        {/* ── CONTENT ── */}
+        <main style={{ flex:1, width:"100%", overflowY:"auto", overflowX:"hidden", position:"relative", zIndex:1 }}>
+          <div style={{ maxWidth:1640, margin:"0 auto", padding:"24px 28px 64px" }}>
+            {tab==="overview"   && <OverviewTab   patients={patients} optimized={optimized} mc={mc}/>}
+            {tab==="prediction" && <PredictionTab patients={patients}/>}
+            {tab==="scheduling" && <SchedulingTab optimized={optimized} waitlist={waitlist}/>}
+            {tab==="simulation" && <SimulationTab/>}
+            {tab==="analytics"  && <AnalyticsTab  patients={patients}/>}
           </div>
         </main>
       </div>

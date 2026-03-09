@@ -1,75 +1,55 @@
-/* ═══════════════════════════════════════════════════
-   ARIL — index.css  (LIGHT THEME)
-   Place this file at:  src/index.css
-   Import in main.jsx:  import './index.css'
-═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   ARIL — index.css  |  Light Theme
+   Save to: src/index.css
+   In main.jsx add: import './index.css'
+═══════════════════════════════════════════════ */
 
-/* ── 1. Hard reset — wipe every Vite default ── */
+/* 1. Hard reset */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* ── 2. Full-viewport root — light warm off-white ── */
-html,
-body,
-#root {
+/* 2. Root — soft periwinkle-white page background */
+html, body, #root {
   width: 100%;
   min-height: 100vh;
-
-  /* Page background: warm off-white, like Stripe / Linear */
-  background-color: #F4F6FA;
-  background-image:
-    radial-gradient(circle, #C8D1E8 1px, transparent 1px);
-  background-size: 28px 28px;
-
-  /* Subtle ambient tint */
-  background-blend-mode: normal;
-
-  color: #0F1729;
+  background-color: #F0F4FF;
+  color: #111827;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* ── 3. Vite scaffolding overrides ── */
-/* Remove any max-width Vite injects on the default template */
+/* 3. Kill Vite default constraints */
 #root {
   max-width: none !important;
   padding: 0 !important;
   text-align: left !important;
 }
 
-/* ── 4. Scrollbar — refined light style ── */
+/* 4. Scrollbar */
 ::-webkit-scrollbar            { width: 5px; height: 5px; }
-::-webkit-scrollbar-track      { background: #EEF1F9; }
-::-webkit-scrollbar-thumb      { background: #C4CADE; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover{ background: #9EAACB; }
+::-webkit-scrollbar-track      { background: #E8EDF8; }
+::-webkit-scrollbar-thumb      { background: #B8C4DC; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover{ background: #8F9FC5; }
 
-/* ── 5. Form element base reset ── */
+/* 5. Form elements inherit font */
 button, input, select, textarea {
   font-family: inherit;
 }
 
-/* ── 6. Image reset ── */
-img, svg {
-  display: block;
-  max-width: 100%;
-}
+/* 6. Images */
+img, svg { display: block; max-width: 100%; }
 
-/* ── 7. Recharts fix — prevent overflow clipping ── */
+/* 7. Recharts overflow fix */
 .recharts-wrapper,
 .recharts-surface {
   overflow: visible !important;
 }
 
-/* ── 8. Link reset ── */
-a {
-  color: #5B6AF0;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
+/* 8. Links */
+a { color: #4F5BD5; text-decoration: none; }
+a:hover { text-decoration: underline; }
